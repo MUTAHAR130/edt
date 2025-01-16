@@ -1,8 +1,7 @@
-import 'package:edt/pages/bottom_bar/bottom_bar.dart';
-import 'package:edt/pages/home/widgets/bottom_sheet.dart';
 import 'package:edt/pages/notification/notification.dart';
 import 'package:edt/pages/search_location/search_location.dart';
 import 'package:edt/utils/helper.dart';
+import 'package:edt/widgets/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,7 +9,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:svg_flutter/svg.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  HomeScreen({super.key,required this.scaffoldKey});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -95,28 +95,38 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Builder(builder: (context) {
+                    return GestureDetector(
+                      onTap: () {
+                        final scaffold = Scaffold.of(context);
+                          if (scaffold.hasDrawer) {
+                            scaffold.openDrawer();
+                          } else {
+                            widget.scaffoldKey.currentState?.openDrawer();
+                          }
+                      },
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: Color.fromARGB(20, 106, 219, 26),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset('assets/icons/bars.svg'),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
                   GestureDetector(
                     onTap: () {
-                       
-                    },
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: Color.fromARGB(20, 106, 219, 26),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset('assets/icons/bars.svg'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>NotificationScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => NotificationScreen()));
                     },
                     child: Container(
                         width: 34,
@@ -143,8 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Center(
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>SearchLocation()));
-
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SearchLocation()));
                   },
                   child: Container(
                     width: getWidth(context) * 0.9,
@@ -152,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         color: Color(0xffe7f0fc),
-                        border: Border.all(color: Color.fromARGB(76, 15, 103, 219))),
+                        border: Border.all(
+                            color: Color.fromARGB(76, 15, 103, 219))),
                     child: ListTile(
                       leading: SvgPicture.asset(
                         'assets/icons/search.svg',
