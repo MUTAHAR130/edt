@@ -1,8 +1,16 @@
+import 'package:edt/pages/bottom_bar/provider/bottombar_provider.dart';
 import 'package:edt/pages/splash/splash.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+     MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => BottomNavProvider()),
+      ],
+      child: MyApp(),
+    ));
 }
 
 class MyApp extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:edt/pages/authentication/signup/complete_profile.dart';
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
@@ -64,7 +64,7 @@ class SetNewPassword extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 20.0),
               child: GestureDetector(
                 onTap: () {
-                  // Navigator.push(context, MaterialPageRoute(builder: (context)=>CompleteProfile()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BottomBar()));
                 },
                 child: getContainer(context, 'Save')),
             )
