@@ -1,7 +1,9 @@
 import 'package:edt/pages/authentication/enable_location/enable_loc.dart';
+import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class DriverPassenger extends StatefulWidget {
   const DriverPassenger({super.key});
@@ -11,8 +13,6 @@ class DriverPassenger extends StatefulWidget {
 }
 
 class _DriverPassengerState extends State<DriverPassenger> {
-  String _selectedOption = '';
-
   List<Map<String, String>> options = [
     {'image': 'assets/images/driver.png', 'text': 'Driver'},
     {'image': 'assets/images/passenger.png', 'text': 'Passenger'},
@@ -20,6 +20,8 @@ class _DriverPassengerState extends State<DriverPassenger> {
 
   @override
   Widget build(BuildContext context) {
+    var userRoleProvider = Provider.of<UserRoleProvider>(context);
+
     return Scaffold(
       appBar: getBackButton(context),
       body: Center(
@@ -50,13 +52,11 @@ class _DriverPassengerState extends State<DriverPassenger> {
               children: List.generate(options.length, (index) {
                 String imgPath = options[index]['image']!;
                 String text = options[index]['text']!;
-                bool isSelected = _selectedOption == text;
+                bool isSelected = userRoleProvider.role == text;
 
                 return GestureDetector(
                   onTap: () {
-                    setState(() {
-                      _selectedOption = text;
-                    });
+                    userRoleProvider.setRole(text);
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -107,7 +107,7 @@ class _DriverPassengerState extends State<DriverPassenger> {
             ),
             Spacer(),
             GestureDetector(
-              onTap: _selectedOption.isNotEmpty
+              onTap: userRoleProvider.role.isNotEmpty
                   ? () {
                       Navigator.push(
                           context,
@@ -120,7 +120,7 @@ class _DriverPassengerState extends State<DriverPassenger> {
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 25),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: _selectedOption.isEmpty
+                    color: userRoleProvider.role.isEmpty
                         ? Color(0xffB0B0B0)
                         : Color(0xff163051)),
                 child: Center(

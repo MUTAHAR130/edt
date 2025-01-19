@@ -5,26 +5,42 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:svg_flutter/svg.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  final GlobalKey<ScaffoldState> scaffoldKey;
+  const ProfileScreen({super.key,required this.scaffoldKey});
 
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: Color(0xff0F69DB1A)),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset('assets/icons/bars.svg'),
-              ],
+          child: GestureDetector(
+            onTap: () {
+              final scaffold = Scaffold.of(context);
+              if (scaffold.hasDrawer) {
+                scaffold.openDrawer();
+              } else {
+                widget.scaffoldKey.currentState?.openDrawer();
+              }
+            },
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Color(0xff0F69DB1A)),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset('assets/icons/bars.svg'),
+                ],
+              ),
             ),
           ),
         ),
@@ -46,8 +62,8 @@ class ProfileScreen extends StatelessWidget {
             Container(
               width: 138,
               height: 138,
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: Colors.grey[200]),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.grey[200]),
               child: Center(
                 child: Icon(Icons.person),
               ),
@@ -62,15 +78,28 @@ class ProfileScreen extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   fontSize: 28),
             ),
-            SizedBox(height: 24,),
+            SizedBox(
+              height: 24,
+            ),
             CustomTextFormField(hintText: 'Email'),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
             PhoneInputField(),
-            SizedBox(height: 10,),
-            CustomTextFormField(hintText: 'Gender',imagePath: 'assets/icons/arrow_down.svg',),
-            SizedBox(height: 10,),
+            SizedBox(
+              height: 10,
+            ),
+            CustomTextFormField(
+              hintText: 'Gender',
+              imagePath: 'assets/icons/arrow_down.svg',
+            ),
+            SizedBox(
+              height: 10,
+            ),
             CustomTextFormField(hintText: 'Address'),
-            SizedBox(height: 32,),
+            SizedBox(
+              height: 32,
+            ),
             getContainer(context, 'Update')
           ],
         ),

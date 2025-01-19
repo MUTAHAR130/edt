@@ -1,4 +1,5 @@
 import 'package:edt/pages/authentication/signup/widgets/phone_field.dart';
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
 import 'package:flutter/material.dart';
@@ -109,7 +110,8 @@ class CompleteProfile extends StatelessWidget {
                             child: Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(6),
-                                child: SvgPicture.asset('assets/icons/camera.svg'),
+                                child:
+                                    SvgPicture.asset('assets/icons/camera.svg'),
                               ),
                             ),
                           ),
@@ -143,25 +145,34 @@ class CompleteProfile extends StatelessWidget {
                   height: 20,
                 ),
                 CustomTextFormField(
-                    hintText: 'District', imagePath: 'assets/icons/arrow_down.svg'),
+                    hintText: 'District',
+                    imagePath: 'assets/icons/arrow_down.svg'),
                 SizedBox(
                   height: 40,
                 ),
                 Row(
                   children: [
                     Expanded(
-                        child: Container(
-                      height: 55,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Color(0xff163051))),
-                      child: Center(
-                        child: Text(
-                          'Cancel',
-                          style: GoogleFonts.poppins(
-                            color: Color(0xff414141),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                        child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => BottomBar()));
+                      },
+                      child: Container(
+                        height: 55,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Color(0xff163051))),
+                        child: Center(
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.poppins(
+                              color: Color(0xff414141),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),
@@ -169,7 +180,15 @@ class CompleteProfile extends StatelessWidget {
                     SizedBox(
                       width: 20,
                     ),
-                    Expanded(child: getContainer(context, 'Save')),
+                    Expanded(
+                        child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => BottomBar()));
+                            },
+                            child: getContainer(context, 'Save'))),
                   ],
                 )
               ],

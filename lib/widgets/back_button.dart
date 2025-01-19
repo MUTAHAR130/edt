@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 AppBar getBackButton(context) {
   return AppBar(
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    primary: true,
+    backgroundColor: Colors.white,
     automaticallyImplyLeading: false,
     title: GestureDetector(
       onTap: () {

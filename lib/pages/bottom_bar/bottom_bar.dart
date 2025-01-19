@@ -1,4 +1,6 @@
+import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/bottom_bar/provider/bottombar_provider.dart';
+import 'package:edt/pages/driver_home/driver_home.dart';
 import 'package:edt/pages/expense_tracking/expense_tracking.dart';
 import 'package:edt/pages/home/home.dart';
 import 'package:edt/pages/profile/profile.dart';
@@ -19,10 +21,11 @@ class _BottomBarState extends State<BottomBar> {
 
   @override
   Widget build(BuildContext context) {
+  var userPro = Provider.of<UserRoleProvider>(context);
     final List<Widget> _screens = [
-      HomeScreen(scaffoldKey: _scaffoldKey),
-      ExpenseTrackingScreen(),
-      ProfileScreen(),
+      userPro.role=='Passenger'? HomeScreen(scaffoldKey: _scaffoldKey):DriverHomeScreen(scaffoldKey: _scaffoldKey),
+      ExpenseTrackingScreen(scaffoldKey: _scaffoldKey),
+      ProfileScreen(scaffoldKey: _scaffoldKey),
     ];
     return Consumer<BottomNavProvider>(
       builder: (context, model, child) {
@@ -57,7 +60,7 @@ class _BottomBarState extends State<BottomBar> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: <Widget>[
                       _buildBottomNavItem(context, model, 'assets/icons/bottomicon1.svg', 'Home', 0),
-                      _buildBottomNavItem(context, model, 'assets/icons/bottomicon2.svg', 'Expense Tracking', 1),
+                      _buildBottomNavItem(context, model, 'assets/icons/bottomicon2.svg', userPro.role=='Passenger'? 'Expense Tracking':'Earning', 1),
                       _buildBottomNavItem(context, model, 'assets/icons/bottomicon3.svg', 'Profile', 2),
                     ],
                   ),
