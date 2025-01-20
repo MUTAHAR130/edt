@@ -13,6 +13,19 @@ class CustomStepperWidget extends StatefulWidget {
 }
 
 class _CustomStepperWidgetState extends State<CustomStepperWidget> {
+  TextEditingController name = TextEditingController();
+  TextEditingController phone = TextEditingController();
+  TextEditingController email = TextEditingController();
+  TextEditingController street = TextEditingController();
+  TextEditingController city = TextEditingController();
+  TextEditingController district = TextEditingController();
+  TextEditingController vehicleType = TextEditingController();
+  TextEditingController vehicleNumber = TextEditingController();
+  TextEditingController color = TextEditingController();
+  TextEditingController idProof = TextEditingController();
+  TextEditingController drivingLicense = TextEditingController();
+  TextEditingController vehicleRegistration = TextEditingController();
+  TextEditingController vehiclePic = TextEditingController();
   int _currentStep = 0;
 
   final List<String> _labels = [
@@ -61,17 +74,17 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
           ),
           child: Center(
             child: isCompleted
-                  ? Icon(
-                      Icons.check,
-                      color: Color(0xff163051),
-                    )
-                  : Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        color: isActive ? Color(0xff0F69DB) : Color(0xff999999),
-                        fontWeight: FontWeight.bold,
-                      ),
+                ? Icon(
+                    Icons.check,
+                    color: Color(0xff163051),
+                  )
+                : Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      color: isActive ? Color(0xff0F69DB) : Color(0xff999999),
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
           ),
         ),
         SizedBox(height: 10),
@@ -104,83 +117,189 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
       case 0:
         return Column(
           children: [
-            SizedBox(height: 30,),
+            SizedBox(
+              height: 20,
+            ),
             Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+              child: Center(
+                child: Icon(
+                  Icons.person,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
             ),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Full Name'),
-            SizedBox(height: 20,),
-            PhoneInputField(),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Email'),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Street'),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'City',imagePath: 'assets/icons/arrow_down.svg',),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'District',imagePath: 'assets/icons/arrow_down.svg'),
-            SizedBox(height: 20,),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Full Name',
+              controller: name,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            PhoneInputField(
+              controller: phone,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Email',
+              controller: email,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Street',
+              controller: street,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'City',
+              // imagePath: 'assets/icons/arrow_down.svg',
+              controller: city,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'District',
+              // imagePath: 'assets/icons/arrow_down.svg',
+              controller: district,
+            ),
+            SizedBox(
+              height: 15,
+            ),
             GestureDetector(
-              onTap: () {
-                if (_currentStep < _labels.length - 1){
-                  _nextStep();
-                } else if(_currentStep > 0){
-                  _previousStep();
-                }
-              },
-              child: getContainer(context, 'Next'))
+                onTap: () {
+                  if (name.text.isEmpty ||
+                      phone.text.isEmpty ||
+                      email.text.isEmpty ||
+                      street.text.isEmpty ||
+                      city.text.isEmpty ||
+                      district.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Please fill in all the fields")),
+                    );
+                    return;
+                  }
+                  if (_currentStep < _labels.length - 1) {
+                    _nextStep();
+                  } else if (_currentStep > 0) {
+                    _previousStep();
+                  }
+                },
+                child: getContainer(context, 'Next'))
           ],
         );
       case 1:
         return Column(
           children: [
-            SizedBox(height: 30,),
-            CustomTextFormField(hintText:'Select Vehicle Type',imagePath: 'assets/icons/arrow_down.svg',),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Vehicle Number'),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Color'),
-            SizedBox(height: 20,),
+            SizedBox(
+              height: 30,
+            ),
+            CustomTextFormField(
+              hintText: 'Select Vehicle Type',
+              imagePath: 'assets/icons/arrow_down.svg',
+              controller: vehicleType,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Vehicle Number',
+              controller: vehicleNumber,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Color',
+              controller: color,
+            ),
+            SizedBox(
+              height: 20,
+            ),
             GestureDetector(
-              onTap: () {
-                if (_currentStep < _labels.length - 1){
-                  _nextStep();
-                } else if(_currentStep > 0){
-                  _previousStep();
-                }
-              },
-              child: getContainer(context, 'Next'))
+                onTap: () {
+                  if (vehicleType.text.isEmpty ||
+                      vehicleNumber.text.isEmpty ||
+                      color.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Please fill in all the fields")),
+                    );
+                    return;
+                  }
+                  if (_currentStep < _labels.length - 1) {
+                    _nextStep();
+                  } else if (_currentStep > 0) {
+                    _previousStep();
+                  }
+                },
+                child: getContainer(context, 'Next')),
           ],
         );
       case 2:
         return Column(
           children: [
-            SizedBox(height: 30,),
-            CustomTextFormField(hintText:'ID Proof',imagePath: 'assets/icons/cloud.svg',),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Driving License',imagePath: 'assets/icons/cloud.svg',),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Vehicle Registration Certificate',imagePath: 'assets/icons/cloud.svg',),
-            SizedBox(height: 20,),
-            CustomTextFormField(hintText:'Vehicle Picture',imagePath: 'assets/icons/cloud.svg',),
-            SizedBox(height: 20,),
+            SizedBox(
+              height: 30,
+            ),
+            CustomTextFormField(
+              hintText: 'ID Proof',
+              imagePath: 'assets/icons/cloud.svg',
+              controller: idProof,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Driving License',
+              imagePath: 'assets/icons/cloud.svg',
+              controller: drivingLicense,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Vehicle Registration Certificate',
+              imagePath: 'assets/icons/cloud.svg',
+              controller: vehicleRegistration,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            CustomTextFormField(
+              hintText: 'Vehicle Picture',
+              imagePath: 'assets/icons/cloud.svg',
+              controller: vehiclePic,
+            ),
+            SizedBox(
+              height: 20,
+            ),
             aggreeRow(),
-            SizedBox(height: 20,),
+            SizedBox(
+              height: 20,
+            ),
             GestureDetector(
-              onTap: () {
-                if (_currentStep < _labels.length - 1){
-                  _nextStep();
-                } else if(_currentStep > 0){
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>BottomBar()));
-                }
-              },
-              child: getContainer(context, 'Submit'))
+                onTap: () {
+                  if (_currentStep < _labels.length - 1) {
+                    _nextStep();
+                  } else if (_currentStep > 0) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => BottomBar()));
+                  }
+                },
+                child: getContainer(context, 'Submit'))
           ],
         );
       default:

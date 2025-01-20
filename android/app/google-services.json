@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "836416174419",
+    "project_id": "edt-app",
+    "storage_bucket": "edt-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836416174419:android:a4c2f80446778030e9c9a6",
+        "android_client_info": {
+          "package_name": "com.example.edt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8zKE0XRTm4BhdagzNe00fEaaS35AbbuM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

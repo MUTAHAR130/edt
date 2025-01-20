@@ -3,11 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 class PhoneInputField extends StatelessWidget {
-  const PhoneInputField({super.key});
-
+  TextEditingController? controller;
+  final bool enabled;
+  PhoneInputField({super.key,this.controller,this.enabled=true});
   @override
   Widget build(BuildContext context) {
     return IntlPhoneField(
+      enabled: enabled,
+      controller: controller,
       disableLengthCheck: true,
       decoration: InputDecoration(
         hintText: 'Your mobile number',

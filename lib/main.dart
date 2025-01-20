@@ -1,17 +1,22 @@
+import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
 import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/bottom_bar/provider/bottombar_provider.dart';
 import 'package:edt/pages/driver_home/provider/accepted_provider.dart';
 import 'package:edt/pages/splash/splash.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main()async {
+   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
      MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => BottomNavProvider()),
         ChangeNotifierProvider(create: (_) => UserRoleProvider()),
         ChangeNotifierProvider(create: (_) => DriverDetailsProvider()),
+        ChangeNotifierProvider(create: (_) => SignupProvider()),
       ],
       child: MyApp(),
     ));

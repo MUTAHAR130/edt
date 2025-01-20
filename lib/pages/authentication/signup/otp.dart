@@ -5,8 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class OtpScreen extends StatelessWidget {
+class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
+
+  @override
+  _OtpScreenState createState() => _OtpScreenState();
+}
+
+class _OtpScreenState extends State<OtpScreen> {
+  final String manuallyEnteredOtp = '12345';
+  String enteredOtp = '';
 
   @override
   Widget build(BuildContext context) {
@@ -47,19 +55,17 @@ class OtpScreen extends StatelessWidget {
             borderRadius: BorderRadius.all(Radius.circular(7)),
             numberOfFields: 5,
             focusedBorderColor: Color(0xff0F69DB),
-            // enabledBorderColor: Colors.blue,
             showFieldAsBox: true,
-            onCodeChanged: (String code) {},
-            onSubmit: (String verificationCode) {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text("Verification Code"),
-                      content: Text('Code entered is $verificationCode'),
-                    );
-                  });
+            onCodeChanged: (String code) {
+              setState(() {
+                enteredOtp = code;
+              });
             },
+            onSubmit: (String verificationCode){
+              setState(() {
+                enteredOtp =  verificationCode;
+              });
+            }
           ),
           SizedBox(
             height: 20,
@@ -88,14 +94,37 @@ class OtpScreen extends StatelessWidget {
             ),
           ),
           Spacer(),
-          // getContainer(context, 'testing'),
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>SetPassword()));
+                if (enteredOtp == manuallyEnteredOtp) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SetPassword()),
+                  );
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Verification Failed"),
+                        content: Text('The OTP entered is incorrect. Please try again.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);  // Close the dialog
+                            },
+                            child: Text("OK"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               },
-              child: getContainer(context, 'Verify')),
+              child: getContainer(context, 'Verify'),
+            ),
           )
         ],
       ),

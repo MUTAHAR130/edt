@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'package:edt/pages/authentication/login/forget_pass.dart';
+import 'package:edt/pages/authentication/login/services/login_service.dart';
 import 'package:edt/pages/authentication/login/verify_screen.dart';
 import 'package:edt/pages/authentication/signup/widgets/google_container.dart';
 import 'package:edt/widgets/back_button.dart';
@@ -15,6 +17,46 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  TextEditingController emailOrPhone = TextEditingController();
+  TextEditingController password = TextEditingController();
+  bool _isLoading = false;
+
+  final LoginService _loginService = LoginService();
+
+  void _login(String emailOrPhone,String password) async {
+    String email = emailOrPhone;
+    String pass = password;
+
+    if (email.isEmpty || pass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      var user = await _loginService.loginUser(email, pass);
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => VerifyScreen()),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login failed: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               CustomTextFormField(
                 hintText: 'Email or Phone Number',
+                controller: emailOrPhone,
               ),
               SizedBox(
                 height: 20,
@@ -49,6 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
               CustomTextFormField(
                 hintText: 'Enter Your Password',
                 imagePath: 'assets/icons/visibility_off.svg',
+                controller: password,
               ),
               SizedBox(
                 height: 10,
@@ -58,12 +102,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgetPasswordScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ForgetPasswordScreen()));
                     },
-                    child: Text('Forget Password?',style: GoogleFonts.poppins(
+                    child: Text(
+                      'Forget Password?',
+                      style: GoogleFonts.poppins(
                           color: Color(0xff0F69DB),
                           fontSize: 14,
-                          fontWeight: FontWeight.w500),),
+                          fontWeight: FontWeight.w500),
+                    ),
                   )
                 ],
               ),
@@ -71,16 +121,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 20,
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=>VerifyScreen()));
-                },
-                child: getContainer(context, 'Sign in')),
+                  onTap: () {
+                    log('tapped');
+                    _isLoading ? null : _login(emailOrPhone.text,password.text);
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => VerifyScreen()));
+                  },
+                  child: getContainer(context, 'Sign in')),
               SizedBox(
                 height: 20,
               ),
               Row(
                 children: [
-                  Expanded(child: Divider(endIndent: 10, color: Color(0xffB8B8B8))),
+                  Expanded(
+                      child: Divider(endIndent: 10, color: Color(0xffB8B8B8))),
                   Text(
                     'or',
                     style: GoogleFonts.poppins(
@@ -88,7 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.w500),
                   ),
-                  Expanded(child: Divider(indent: 10, color: Color(0xffB8B8B8))),
+                  Expanded(
+                      child: Divider(indent: 10, color: Color(0xffB8B8B8))),
                 ],
               ),
               SizedBox(
@@ -106,23 +163,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
               ),
               GestureDetector(
-                onTap: () {
-                  
-                },
+                onTap: () {},
                 child: Row(
                   spacing: 7,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don’t have an account?',
+                    Text(
+                      'Don’t have an account?',
                       style: GoogleFonts.poppins(
                           color: Color(0xff5a5a5a),
                           fontSize: 15,
-                          fontWeight: FontWeight.w500),),
-                    Text('Sign Up',
+                          fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      'Sign Up',
                       style: GoogleFonts.poppins(
                           color: Color(0xff0F69DB),
                           fontSize: 15,
-                          fontWeight: FontWeight.w500),),
+                          fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               )
