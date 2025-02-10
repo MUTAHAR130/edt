@@ -2,7 +2,9 @@ import 'dart:developer';
 import 'package:edt/pages/authentication/login/forget_pass.dart';
 import 'package:edt/pages/authentication/login/services/login_service.dart';
 import 'package:edt/pages/authentication/login/verify_screen.dart';
+import 'package:edt/pages/authentication/signup/services/google_signin.dart';
 import 'package:edt/pages/authentication/signup/widgets/google_container.dart';
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
@@ -41,9 +43,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       var user = await _loginService.loginUser(email, pass);
       if (user != null) {
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => VerifyScreen()),
+        // );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => VerifyScreen()),
+          MaterialPageRoute(builder: (context) => BottomBar()),
         );
       }
     } catch (e) {
@@ -155,8 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 spacing: 15,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CustomContainer(svgPicture: 'assets/icons/gmail.svg'),
-                  CustomContainer(svgPicture: 'assets/icons/facebook.svg'),
+                  GestureDetector(
+                    onTap: () {
+                      GoogleButton().loginWithGoogle(context);
+                    },
+                    child: CustomContainer(svgPicture: 'assets/icons/gmail.svg')),
+                  // CustomContainer(svgPicture: 'assets/icons/facebook.svg'),
                 ],
               ),
               SizedBox(

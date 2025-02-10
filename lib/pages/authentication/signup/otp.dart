@@ -1,20 +1,45 @@
+import 'package:edt/pages/authentication/signup/services/phone_auth.dart';
 import 'package:edt/pages/authentication/signup/set_password.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String verificationId;
+
+  const OtpScreen({super.key, required this.verificationId});
 
   @override
   _OtpScreenState createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final String manuallyEnteredOtp = '12345';
   String enteredOtp = '';
+
+  void verifyOtp() {
+  PhoneAuthHelper.verifyOtp(
+    verificationId: widget.verificationId,
+    smsCode: enteredOtp,
+    onError: (FirebaseAuthException e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'Invalid OTP'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    },
+  ).then((success) {
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => SetPassword(role: 'Passenger',)),
+      );
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +47,7 @@ class _OtpScreenState extends State<OtpScreen> {
       appBar: getBackButton(context),
       body: Column(
         children: [
-          SizedBox(
-            height: 30,
-          ),
+          SizedBox(height: 30),
           Text(
             'Phone Verification',
             textAlign: TextAlign.center,
@@ -34,9 +57,7 @@ class _OtpScreenState extends State<OtpScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(
-            height: 13,
-          ),
+          SizedBox(height: 13),
           Text(
             'Enter your OTP Code',
             textAlign: TextAlign.center,
@@ -46,14 +67,12 @@ class _OtpScreenState extends State<OtpScreen> {
               fontWeight: FontWeight.w400,
             ),
           ),
-          SizedBox(
-            height: 40,
-          ),
+          SizedBox(height: 40),
           OtpTextField(
             fieldHeight: 60,
             fieldWidth: 55,
             borderRadius: BorderRadius.all(Radius.circular(7)),
-            numberOfFields: 5,
+            numberOfFields: 6,
             focusedBorderColor: Color(0xff0F69DB),
             showFieldAsBox: true,
             onCodeChanged: (String code) {
@@ -61,34 +80,35 @@ class _OtpScreenState extends State<OtpScreen> {
                 enteredOtp = code;
               });
             },
-            onSubmit: (String verificationCode){
+            onSubmit: (String verificationCode) {
               setState(() {
-                enteredOtp =  verificationCode;
+                enteredOtp = verificationCode;
               });
-            }
+            },
           ),
-          SizedBox(
-            height: 20,
-          ),
+          SizedBox(height: 20),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              // Resend OTP Logic
+            },
             child: Row(
-              spacing: 7,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Didn’t receive code?',
                   style: GoogleFonts.poppins(
-                      color: Color(0xff5a5a5a),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500),
+                    color: Color(0xff5a5a5a),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 Text(
                   'Resend again',
                   style: GoogleFonts.poppins(
-                      color: Color(0xff0F69DB),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500),
+                    color: Color(0xff0F69DB),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -97,32 +117,7 @@ class _OtpScreenState extends State<OtpScreen> {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: GestureDetector(
-              onTap: () {
-                if (enteredOtp == manuallyEnteredOtp) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SetPassword()),
-                  );
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("Verification Failed"),
-                        content: Text('The OTP entered is incorrect. Please try again.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);  // Close the dialog
-                            },
-                            child: Text("OK"),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                }
-              },
+              onTap: verifyOtp,
               child: getContainer(context, 'Verify'),
             ),
           )

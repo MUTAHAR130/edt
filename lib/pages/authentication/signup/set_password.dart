@@ -1,4 +1,3 @@
-import 'package:edt/pages/authentication/signup/complete_profile.dart';
 import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
 import 'package:edt/pages/authentication/signup/services/signup_service.dart';
 import 'package:edt/pages/boarding/provider/role_provider.dart';
@@ -10,7 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class SetPassword extends StatelessWidget {
-  const SetPassword({super.key});
+  final String? role;
+  const SetPassword({super.key,required this.role});
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +99,8 @@ class SetPassword extends StatelessWidget {
                         );
                         return;
                       }
+                      try {
+                        role=='Passenger'?
                       SignupService().signupUser(
                         username: signupPro.name,
                         email: signupPro.email,
@@ -106,12 +108,34 @@ class SetPassword extends StatelessWidget {
                         gender: signupPro.gender,
                         role: userPro.role,
                         password: password.text,
-                      );
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => CompleteProfile()),
-                      );
+                        context: context
+                      ):role=='Driver'?SignupService().signupDriver(
+                        fullname: signupPro.driverFullname,
+                        phone: signupPro.driverPhone,
+                        email: signupPro.driverEmail,
+                        street: signupPro.driverStreet,
+                        city: signupPro.driverCity,
+                        district: signupPro.driverDistrict,
+                        vehicleType: signupPro.driverVehicleType,
+                        vehicleNumber: signupPro.driverVehicleNumber,
+                        vehicleColor: signupPro.driverVehicleColor,
+                        idProof: signupPro.driverIdProof,
+                        drivingLicense: signupPro.driverDrivingLicense,
+                        vehicleRegistrationCertificate: signupPro.driverVehicleRegistrationCertificate,
+                        vehiclePicture: signupPro.driverVehiclePicture,
+                        password: password.text,
+                        context: context
+                      ):ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("No Role Specified")),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text(e.toString())),
+                        );
+                      }
+                      
                     },
                     child: getContainer(context, 'Register')),
               )

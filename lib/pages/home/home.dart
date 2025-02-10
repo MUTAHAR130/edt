@@ -1,7 +1,6 @@
 import 'package:edt/pages/notification/notification.dart';
 import 'package:edt/pages/search_location/search_location.dart';
 import 'package:edt/utils/helper.dart';
-import 'package:edt/widgets/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,7 +9,7 @@ import 'package:svg_flutter/svg.dart';
 
 class HomeScreen extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
-  HomeScreen({super.key,required this.scaffoldKey});
+  const HomeScreen({super.key,required this.scaffoldKey});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

@@ -171,7 +171,7 @@ class CompleteProfile extends StatelessWidget {
                     Expanded(
                         child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => BottomBar()));
@@ -207,6 +207,7 @@ class CompleteProfile extends StatelessWidget {
                                 street.text,
                                 city.text,
                                 district.text,
+                                context
                               );
                               Navigator.push(
                                   context,

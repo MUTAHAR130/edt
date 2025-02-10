@@ -7,6 +7,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? hintText;
   final String? imagePath;
   final VoidCallback? onTap;
+  final TextInputType? keyboardType;
   final bool? enabled;
 
   const CustomTextFormField({
@@ -15,6 +16,7 @@ class CustomTextFormField extends StatelessWidget {
     required this.hintText,
     this.imagePath,
     this.onTap,
+    this.keyboardType,
     this.enabled
   });
 
@@ -25,6 +27,7 @@ class CustomTextFormField extends StatelessWidget {
       child: SizedBox(
         height: 60,
         child: TextFormField(
+          keyboardType:keyboardType,
           enabled: enabled,
           controller: controller,
           decoration: InputDecoration(

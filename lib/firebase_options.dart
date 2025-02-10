@@ -41,46 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCk3Mdp55nfMiK0EasBB45LSNxWJ5BQ0Hc',
-    appId: '1:836416174419:web:7bd079e01ab4c7dee9c9a6',
-    messagingSenderId: '836416174419',
-    projectId: 'edt-app',
-    authDomain: 'edt-app.firebaseapp.com',
-    storageBucket: 'edt-app.firebasestorage.app',
+    apiKey: 'AIzaSyAoaZ6ewG3O_Sz7Ue1dWD24L0COPn_Ualw',
+    appId: '1:751857329071:web:af8159761d90c4cca9055a',
+    messagingSenderId: '751857329071',
+    projectId: 'edtapp-2e807',
+    authDomain: 'edtapp-2e807.firebaseapp.com',
+    storageBucket: 'edtapp-2e807.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA8zKE0XRTm4BhdagzNe00fEaaS35AbbuM',
-    appId: '1:836416174419:android:a4c2f80446778030e9c9a6',
-    messagingSenderId: '836416174419',
-    projectId: 'edt-app',
-    storageBucket: 'edt-app.firebasestorage.app',
+    apiKey: 'AIzaSyB7uoRRQxivWgZtF8O8wASnIXBg1jGvTV8',
+    appId: '1:751857329071:android:a1ef0b2c7f346096a9055a',
+    messagingSenderId: '751857329071',
+    projectId: 'edtapp-2e807',
+    storageBucket: 'edtapp-2e807.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCSCG4pAytrrwhixNR7OsIUtH6ys7W6fQc',
-    appId: '1:836416174419:ios:81a05824ad5ffb60e9c9a6',
-    messagingSenderId: '836416174419',
-    projectId: 'edt-app',
-    storageBucket: 'edt-app.firebasestorage.app',
+    apiKey: 'AIzaSyBAXmr6EqlTrs1hVb8M4k9I-eAqcshUpHI',
+    appId: '1:751857329071:ios:fba882698a500f56a9055a',
+    messagingSenderId: '751857329071',
+    projectId: 'edtapp-2e807',
+    storageBucket: 'edtapp-2e807.firebasestorage.app',
     iosBundleId: 'com.example.edt',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCSCG4pAytrrwhixNR7OsIUtH6ys7W6fQc',
-    appId: '1:836416174419:ios:81a05824ad5ffb60e9c9a6',
-    messagingSenderId: '836416174419',
-    projectId: 'edt-app',
-    storageBucket: 'edt-app.firebasestorage.app',
+    apiKey: 'AIzaSyBAXmr6EqlTrs1hVb8M4k9I-eAqcshUpHI',
+    appId: '1:751857329071:ios:fba882698a500f56a9055a',
+    messagingSenderId: '751857329071',
+    projectId: 'edtapp-2e807',
+    storageBucket: 'edtapp-2e807.firebasestorage.app',
     iosBundleId: 'com.example.edt',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCk3Mdp55nfMiK0EasBB45LSNxWJ5BQ0Hc',
-    appId: '1:836416174419:web:fb548d3b0441b0cee9c9a6',
-    messagingSenderId: '836416174419',
-    projectId: 'edt-app',
-    authDomain: 'edt-app.firebaseapp.com',
-    storageBucket: 'edt-app.firebasestorage.app',
+    apiKey: 'AIzaSyAoaZ6ewG3O_Sz7Ue1dWD24L0COPn_Ualw',
+    appId: '1:751857329071:web:f049bf3eb3e87b0da9055a',
+    messagingSenderId: '751857329071',
+    projectId: 'edtapp-2e807',
+    authDomain: 'edtapp-2e807.firebaseapp.com',
+    storageBucket: 'edtapp-2e807.firebasestorage.app',
   );
+
 }

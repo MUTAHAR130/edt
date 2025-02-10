@@ -1,9 +1,12 @@
+import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
+import 'package:edt/pages/authentication/signup/set_password.dart';
 import 'package:edt/pages/authentication/signup/widgets/agree_row.dart';
 import 'package:edt/pages/authentication/signup/widgets/phone_field.dart';
 import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CustomStepperWidget extends StatefulWidget {
   const CustomStepperWidget({super.key});
@@ -143,7 +146,9 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
             SizedBox(
               height: 20,
             ),
-            PhoneInputField(
+            CustomTextFormField(
+              hintText: 'Write phone with country code (+92)',
+              keyboardType: TextInputType.phone,
               controller: phone,
             ),
             SizedBox(
@@ -191,6 +196,11 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
                       SnackBar(content: Text("Please fill in all the fields")),
                     );
                     return;
+                  } else {
+                    var signupPro =
+                        Provider.of<SignupProvider>(context, listen: false);
+                    signupPro.setDriverValue1(name.text, phone.text, email.text,
+                        street.text, city.text, district.text);
                   }
                   if (_currentStep < _labels.length - 1) {
                     _nextStep();
@@ -238,6 +248,11 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
                       SnackBar(content: Text("Please fill in all the fields")),
                     );
                     return;
+                  } else {
+                    var signupPro =
+                        Provider.of<SignupProvider>(context, listen: false);
+                    signupPro.setDriverValue2(
+                        vehicleType.text, vehicleNumber.text, color.text);
                   }
                   if (_currentStep < _labels.length - 1) {
                     _nextStep();
@@ -292,11 +307,30 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
             ),
             GestureDetector(
                 onTap: () {
+                  if (idProof.text.isEmpty ||
+                      drivingLicense.text.isEmpty ||
+                      vehicleRegistration.text.isEmpty ||
+                      vehiclePic.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Please fill in all the fields")),
+                    );
+                    return;
+                  } else {
+                    var signupPro =
+                        Provider.of<SignupProvider>(context, listen: false);
+                    signupPro.setDriverValue3(idProof.text, drivingLicense.text,
+                        vehicleRegistration.text, vehiclePic.text);
+                  }
                   if (_currentStep < _labels.length - 1) {
                     _nextStep();
                   } else if (_currentStep > 0) {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => BottomBar()));
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SetPassword(
+                                role: 'Driver',
+                              )),
+                    );
                   }
                 },
                 child: getContainer(context, 'Submit'))

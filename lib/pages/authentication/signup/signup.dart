@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'package:edt/pages/authentication/signup/otp.dart';
 import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
+import 'package:edt/pages/authentication/signup/services/google_signin.dart';
+import 'package:edt/pages/authentication/signup/services/phone_auth.dart';
 import 'package:edt/pages/authentication/signup/widgets/google_container.dart';
 import 'package:edt/pages/authentication/signup/widgets/phone_field.dart';
 import 'package:edt/pages/authentication/signup/widgets/stepper.dart';
@@ -8,6 +10,7 @@ import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,8 +27,9 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   TextEditingController name = TextEditingController();
   TextEditingController email = TextEditingController();
-  TextEditingController phone = TextEditingController();
   TextEditingController gender = TextEditingController();
+  TextEditingController phone = TextEditingController();
+  String completePhoneNumber = '';
   @override
   Widget build(BuildContext context) {
     var userPro = Provider.of<UserRoleProvider>(context);
@@ -68,9 +72,16 @@ class _SignupScreenState extends State<SignupScreen> {
                       SizedBox(
                         height: 20,
                       ),
-                      PhoneInputField(
+                      CustomTextFormField(
+                        hintText: 'Write phone with country code (+92)',
+                        keyboardType: TextInputType.phone,
                         controller: phone,
                       ),
+                      // PhoneInputField(
+                      //   controller: phone,
+                      //   onPhoneNumberChanged: (formattedNumber) {
+                      //   },
+                      // ),
                       SizedBox(
                         height: 20,
                       ),
@@ -157,10 +168,31 @@ class _SignupScreenState extends State<SignupScreen> {
                               signupPro.setValues(name.text, email.text,
                                   phone.text, gender.text);
                               log('${signupPro.name},${signupPro.email},${signupPro.phone},${signupPro.gender}');
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => OtpScreen()));
+                              PhoneAuthHelper.sendOtp(
+                                  phoneNumber: phone.text,
+                                  context: context,
+                                  onCodeSent: (String verificationId) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OtpScreen(
+                                            verificationId: verificationId),
+                                      ),
+                                    );
+                                  },
+                                  onError: (FirebaseAuthException error) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(error.message ??
+                                            "An error occurred"),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  });
+                              // Navigator.push(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //         builder: (context) => OtpScreen()));
                             }
                           },
                           child: getContainer(context, 'Sign up')),
@@ -191,9 +223,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         spacing: 15,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CustomContainer(svgPicture: 'assets/icons/gmail.svg'),
-                          CustomContainer(
-                              svgPicture: 'assets/icons/facebook.svg'),
+                          GestureDetector(
+                              onTap: () {
+                                GoogleButton().signupWithGoogle(context);
+                              },
+                              child: CustomContainer(
+                                  svgPicture: 'assets/icons/gmail.svg')),
                         ],
                       ),
                       SizedBox(

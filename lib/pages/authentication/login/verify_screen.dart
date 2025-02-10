@@ -1,4 +1,5 @@
 import 'package:edt/pages/authentication/login/signin_otp.dart';
+import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
@@ -6,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class VerifyScreen extends StatefulWidget {
   const VerifyScreen({super.key});
@@ -29,14 +31,17 @@ class _VerifyScreenState extends State<VerifyScreen> {
     }
 
     try {
+      var roleProvider=Provider.of<UserRoleProvider>(context);
+      String role = roleProvider.role;
+      String collectionName = role == 'Driver' ? 'drivers' : 'passengers';
       final userQuery = await FirebaseFirestore.instance
-          .collection('users')
+          .collection(collectionName)
           .where('email', isEqualTo: inputValue)
           .get();
 
       if (userQuery.docs.isEmpty) {
         final phoneQuery = await FirebaseFirestore.instance
-            .collection('users')
+            .collection(collectionName)
             .where('phone', isEqualTo: inputValue)
             .get();
 

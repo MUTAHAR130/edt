@@ -5,13 +5,46 @@ class SignupProvider with ChangeNotifier {
   String _email = '';
   String _phone = '';
   String _gender = '';
+  //driver step 1
+  String _driverFullname = '';
+  String _driverPhone = '';
+  String _driverEmail = '';
+  String _driverStreet = '';
+  String _driverCity = '';
+  String _driverDistrict = '';
+  //driver step2
+   String _driverVehicleType = '';
+   String _driverVehicleNumber = '';
+   String _driverVehicleColor = '';
+   //driver step 3
+   String _driverIdProof = '';
+   String _driverDrivingLicense = '';
+   String _driverVehicleRegistrationCertificate = '';
+   String _driverVehiclePicture = '';
 
   String get name => _name;
   String get email => _email;
   String get phone => _phone;
   String get gender => _gender;
 
-  void setValues(String name,String email,String phone,String gender) {
+  //driver getter 1
+  String get driverFullname => _driverFullname;
+  String get driverPhone => _driverPhone;
+  String get driverEmail => _driverEmail;
+  String get driverStreet => _driverStreet;
+  String get driverCity => _driverCity;
+  String get driverDistrict => _driverDistrict;
+  //driver getter 2
+  String get driverVehicleType => _driverVehicleType;
+  String get driverVehicleNumber => _driverVehicleNumber;
+  String get driverVehicleColor => _driverVehicleColor;
+  //driver getter 3
+  String get driverIdProof => _driverIdProof;
+  String get driverDrivingLicense => _driverDrivingLicense;
+  String get driverVehicleRegistrationCertificate => _driverVehicleRegistrationCertificate;
+  String get driverVehiclePicture => _driverVehiclePicture;
+
+  void setValues(String name, String email, String phone, String gender) {
     _name = name;
     _email = email;
     _phone = phone;
@@ -19,4 +52,46 @@ class SignupProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void setDriverValue1(
+      String driverFullname,
+      String driverPhone,
+      String driverEmail,
+      String driverStreet,
+      String driverCity,
+      String driverDistrict) {
+    _driverFullname = driverFullname;
+    _driverPhone = driverPhone;
+    _driverEmail = driverEmail;
+    _driverStreet = driverStreet;
+    _driverCity = driverCity;
+    _driverDistrict = driverDistrict;
+    notifyListeners();
+  }
+
+
+  void setDriverValue2(
+      String driverVehicleType,
+      String driverVehicleNumber,
+      String driverVehicleColor,
+      ) {
+    _driverVehicleType = driverVehicleType;
+    _driverVehicleNumber = driverVehicleNumber;
+    _driverVehicleColor = driverVehicleColor;
+    notifyListeners();
+  }
+
+
+
+  void setDriverValue3(
+      String driverIdProof,
+      String driverDrivingLicense,
+      String driverVehicleRegistrationCertificate,
+      String driverVehiclePicture,
+      ) {
+    _driverIdProof = driverIdProof;
+    _driverDrivingLicense = driverDrivingLicense;
+    _driverVehicleRegistrationCertificate = driverVehicleRegistrationCertificate;
+    _driverVehiclePicture = driverVehiclePicture;
+    notifyListeners();
+  }
 }

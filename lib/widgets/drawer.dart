@@ -1,3 +1,5 @@
+import 'package:edt/pages/authentication/login/login.dart';
+import 'package:edt/pages/authentication/signup/services/signup_service.dart';
 import 'package:edt/pages/drawer_screens/address/address.dart';
 import 'package:edt/pages/drawer_screens/complain/complain.dart';
 import 'package:edt/pages/drawer_screens/emergency/emergency.dart';
@@ -78,37 +80,53 @@ Drawer getDrawer(BuildContext context) {
           ),
         ),
 
-        _buildDrawerItem('assets/icons/dicon1.svg', 'Edit Profile',(){}),
-        _buildDrawerItem('assets/icons/dicon2.svg', 'Address',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>AddressScreen()));
+        _buildDrawerItem('assets/icons/dicon1.svg', 'Edit Profile', () {}),
+        _buildDrawerItem('assets/icons/dicon2.svg', 'Address', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AddressScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon3.svg', 'History',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>HistoryScreen()));
+        _buildDrawerItem('assets/icons/dicon3.svg', 'History', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => HistoryScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon4.svg', 'Complain',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>ComplainScreen()));
+        _buildDrawerItem('assets/icons/dicon4.svg', 'Complain', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => ComplainScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon5.svg', 'Rewards',(){}),
-        _buildDrawerItem('assets/icons/dicon6.svg', 'About Us',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>AboutUsScreen()));
+        _buildDrawerItem('assets/icons/dicon5.svg', 'Rewards', () {}),
+        _buildDrawerItem('assets/icons/dicon6.svg', 'About Us', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AboutUsScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon7.svg', 'Settings',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>SettingsScreen()));
+        _buildDrawerItem('assets/icons/dicon7.svg', 'Settings', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => SettingsScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon8.svg', 'Emergency',(){
+        _buildDrawerItem('assets/icons/dicon8.svg', 'Emergency', () {
           Navigator.pop(context);
           emergencySheet(context);
         }),
-        _buildDrawerItem('assets/icons/dicon9.svg', 'Help and Support',(){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=>HelpAndSupport()));
+        _buildDrawerItem('assets/icons/dicon9.svg', 'Help and Support', () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => HelpAndSupport()));
         }),
-        _buildDrawerItem('assets/icons/dicon10.svg', 'Logout',(){}),
+        _buildDrawerItem('assets/icons/dicon10.svg', 'Logout', () {
+          try {
+            SignupService().signOut();
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => LoginScreen()));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(e.toString())),
+            );
+          }
+        }),
       ],
     ),
   );
 }
 
-Widget _buildDrawerItem(String iconPath, String title,VoidCallback? onTap) {
+Widget _buildDrawerItem(String iconPath, String title, VoidCallback? onTap) {
   return Column(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -116,6 +134,7 @@ Widget _buildDrawerItem(String iconPath, String title,VoidCallback? onTap) {
         color: Color(0xffE8E8E8),
       ),
       ListTile(
+        splashColor: Colors.transparent,
         tileColor: Colors.white,
         leading:
             SizedBox(width: 20, height: 20, child: SvgPicture.asset(iconPath)),

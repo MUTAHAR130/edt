@@ -44,10 +44,10 @@ class _BottomBarState extends State<BottomBar> {
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withOpacity(0.1),
                         offset: Offset(0, -4),
-                        spreadRadius: 2,
-                        blurRadius: 8,
+                        spreadRadius: 0.1,
+                        blurRadius: 1,
                       ),
                     ],
                     borderRadius: const BorderRadius.only(
