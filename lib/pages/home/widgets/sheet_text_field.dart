@@ -7,6 +7,7 @@ class SheetTextField extends StatelessWidget {
   final String? hintText;
   final String? imagePath;
   final VoidCallback? onTap;
+  final bool readOnly;
 
   const SheetTextField({
     super.key,
@@ -14,49 +15,46 @@ class SheetTextField extends StatelessWidget {
     required this.hintText,
     this.imagePath,
     this.onTap,
+    this.readOnly = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        height: 60,
-        child: TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: GoogleFonts.poppins(
-              color: Color(0xff5a5a5a),
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xffB8B8B8), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xffB8B8B8), width: 1),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Color(0xffB8B8B8), width: 1),
-            ),
-            prefixIcon: imagePath != null
-                ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      imagePath!,
+    return IntrinsicHeight(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        // height: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Color(0xffB8B8B8), width: 1),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(8),
+            child: Row(
+              children: [
+                if (imagePath != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: SvgPicture.asset(imagePath!),
+                  ),
+                Expanded(
+                  child: Text(
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    hintText ?? '',
+                    style: GoogleFonts.poppins(
+                      color: Color(0xff5a5a5a),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                )
-                : null,
+                  ),
+                ),
+              ],
+            ),
           ),
-          style: TextStyle(color: Colors.black),
-          maxLines: 1,
-          textAlignVertical: TextAlignVertical.center,
         ),
       ),
     );

@@ -1,9 +1,6 @@
-// First create a new file called lib/services/places_service.dart
 import 'dart:developer';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PlacesService {
   static const String baseUrl = 'https://maps.googleapis.com/maps/api/place';
