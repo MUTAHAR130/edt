@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
 import 'package:edt/pages/authentication/signup/set_password.dart';
 import 'package:edt/pages/authentication/signup/widgets/agree_row.dart';
-import 'package:edt/pages/authentication/signup/widgets/phone_field.dart';
-import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class CustomStepperWidget extends StatefulWidget {
@@ -22,6 +25,7 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
   TextEditingController street = TextEditingController();
   TextEditingController city = TextEditingController();
   TextEditingController district = TextEditingController();
+  TextEditingController vehicleName = TextEditingController();
   TextEditingController vehicleType = TextEditingController();
   TextEditingController vehicleNumber = TextEditingController();
   TextEditingController color = TextEditingController();
@@ -29,6 +33,7 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
   TextEditingController drivingLicense = TextEditingController();
   TextEditingController vehicleRegistration = TextEditingController();
   TextEditingController vehiclePic = TextEditingController();
+  TextEditingController driverImage = TextEditingController();
   int _currentStep = 0;
 
   final List<String> _labels = [
@@ -36,6 +41,26 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
     'Vehicle\nInformation',
     'Upload\nDocuments',
   ];
+
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickDriverImage() async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      driverImage.text=pickedFile.path;
+      Provider.of<SignupProvider>(context, listen: false)
+          .setDriverImage(pickedFile.path);
+    }
+  }
+
+  Future<void> _pickImageForField(TextEditingController controller) async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      controller.text = pickedFile.path;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -120,220 +145,249 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
       case 0:
         return Column(
           children: [
-            SizedBox(
-              height: 20,
-            ),
-            Container(
-              width: 120,
-              height: 120,
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-              child: Center(
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 40,
-                ),
+            SizedBox(height: 20),
+            GestureDetector(
+              onTap: _pickDriverImage,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey,
+                      image: Provider.of<SignupProvider>(context).driverImage !=
+                              null
+                          ? DecorationImage(
+                              image: FileImage(File(
+                                  Provider.of<SignupProvider>(context)
+                                      .driverImage!)),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
+                    child:
+                        Provider.of<SignupProvider>(context).driverImage == null
+                            ? Center(
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 40,
+                                ),
+                              )
+                            : null,
+                  ),
+                  Positioned(
+                    bottom: -5,
+                    right: -5,
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Full Name',
               controller: name,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Write phone with country code (+92)',
               keyboardType: TextInputType.phone,
               controller: phone,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Email',
               controller: email,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Street',
               controller: street,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'City',
-              // imagePath: 'assets/icons/arrow_down.svg',
               controller: city,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'District',
-              // imagePath: 'assets/icons/arrow_down.svg',
               controller: district,
             ),
-            SizedBox(
-              height: 15,
-            ),
+            SizedBox(height: 15),
             GestureDetector(
-                onTap: () {
-                  if (name.text.isEmpty ||
-                      phone.text.isEmpty ||
-                      email.text.isEmpty ||
-                      street.text.isEmpty ||
-                      city.text.isEmpty ||
-                      district.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please fill in all the fields")),
-                    );
-                    return;
-                  } else {
-                    var signupPro =
-                        Provider.of<SignupProvider>(context, listen: false);
-                    signupPro.setDriverValue1(name.text, phone.text, email.text,
-                        street.text, city.text, district.text);
-                  }
-                  if (_currentStep < _labels.length - 1) {
-                    _nextStep();
-                  } else if (_currentStep > 0) {
-                    _previousStep();
-                  }
-                },
-                child: getContainer(context, 'Next'))
+              onTap: () {
+                if (name.text.isEmpty ||
+                    phone.text.isEmpty ||
+                    email.text.isEmpty ||
+                    street.text.isEmpty ||
+                    city.text.isEmpty ||
+                    district.text.isEmpty) {
+                  EasyLoading.showError("Please fill in all the fields");
+                  return;
+                } else {
+                  var signupPro =
+                      Provider.of<SignupProvider>(context, listen: false);
+                  signupPro.setDriverValue1(
+                      name.text,
+                      phone.text,
+                      email.text,
+                      street.text,
+                      city.text,
+                      district.text,
+                      driverImage.text);
+                }
+                if (_currentStep < _labels.length - 1) {
+                  _nextStep();
+                } else if (_currentStep > 0) {
+                  _previousStep();
+                }
+              },
+              child: getContainer(context, 'Next'),
+            )
           ],
         );
       case 1:
         return Column(
           children: [
-            SizedBox(
-              height: 30,
+            SizedBox(height: 30),
+            CustomTextFormField(
+              hintText: 'Vehicle Name',
+              controller: vehicleName,
             ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Select Vehicle Type',
               imagePath: 'assets/icons/arrow_down.svg',
               controller: vehicleType,
+              enabled: false,
+              onTap: () {
+                _showVehicleType(context);
+              },
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Vehicle Number',
               controller: vehicleNumber,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Color',
               controller: color,
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             GestureDetector(
-                onTap: () {
-                  if (vehicleType.text.isEmpty ||
-                      vehicleNumber.text.isEmpty ||
-                      color.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please fill in all the fields")),
-                    );
-                    return;
-                  } else {
-                    var signupPro =
-                        Provider.of<SignupProvider>(context, listen: false);
-                    signupPro.setDriverValue2(
-                        vehicleType.text, vehicleNumber.text, color.text);
-                  }
-                  if (_currentStep < _labels.length - 1) {
-                    _nextStep();
-                  } else if (_currentStep > 0) {
-                    _previousStep();
-                  }
-                },
-                child: getContainer(context, 'Next')),
+              onTap: () {
+                if (vehicleName.text.isEmpty || vehicleType.text.isEmpty ||
+                    vehicleNumber.text.isEmpty ||
+                    color.text.isEmpty) {
+                  EasyLoading.showError("Please fill in all the fields");
+                  return;
+                } else {
+                  var signupPro =
+                      Provider.of<SignupProvider>(context, listen: false);
+                  signupPro.setDriverValue2(
+                      vehicleName.text, vehicleType.text, vehicleNumber.text, color.text);
+                }
+                if (_currentStep < _labels.length - 1) {
+                  _nextStep();
+                } else if (_currentStep > 0) {
+                  _previousStep();
+                }
+              },
+              child: getContainer(context, 'Next'),
+            ),
           ],
         );
       case 2:
         return Column(
           children: [
-            SizedBox(
-              height: 30,
-            ),
+            SizedBox(height: 30),
             CustomTextFormField(
               hintText: 'ID Proof',
               imagePath: 'assets/icons/cloud.svg',
               controller: idProof,
+              enabled: false,
+              onTap: () {
+                _pickImageForField(idProof);
+              },
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Driving License',
               imagePath: 'assets/icons/cloud.svg',
               controller: drivingLicense,
+              enabled: false,
+              onTap: () {
+                _pickImageForField(drivingLicense);
+              },
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Vehicle Registration Certificate',
               imagePath: 'assets/icons/cloud.svg',
               controller: vehicleRegistration,
+              enabled: false,
+              onTap: () {
+                _pickImageForField(vehicleRegistration);
+              },
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             CustomTextFormField(
               hintText: 'Vehicle Picture',
               imagePath: 'assets/icons/cloud.svg',
               controller: vehiclePic,
+              enabled: false,
+              onTap: () {
+                _pickImageForField(vehiclePic);
+              },
             ),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             aggreeRow(),
-            SizedBox(
-              height: 20,
-            ),
+            SizedBox(height: 20),
             GestureDetector(
-                onTap: () {
-                  if (idProof.text.isEmpty ||
-                      drivingLicense.text.isEmpty ||
-                      vehicleRegistration.text.isEmpty ||
-                      vehiclePic.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please fill in all the fields")),
-                    );
-                    return;
-                  } else {
-                    var signupPro =
-                        Provider.of<SignupProvider>(context, listen: false);
-                    signupPro.setDriverValue3(idProof.text, drivingLicense.text,
-                        vehicleRegistration.text, vehiclePic.text);
-                  }
-                  if (_currentStep < _labels.length - 1) {
-                    _nextStep();
-                  } else if (_currentStep > 0) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => SetPassword(
-                                role: 'Driver',
-                              )),
-                    );
-                  }
-                },
-                child: getContainer(context, 'Submit'))
+              onTap: () {
+                if (idProof.text.isEmpty ||
+                    drivingLicense.text.isEmpty ||
+                    vehicleRegistration.text.isEmpty ||
+                    vehiclePic.text.isEmpty) {
+                  EasyLoading.showError("Please fill in all the fields");
+                  return;
+                } else {
+                  var signupPro =
+                      Provider.of<SignupProvider>(context, listen: false);
+                  signupPro.setDriverValue3(idProof.text, drivingLicense.text,
+                      vehicleRegistration.text, vehiclePic.text);
+                }
+                if (_currentStep < _labels.length - 1) {
+                  _nextStep();
+                } else if (_currentStep > 0) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SetPassword(role: 'Driver'),
+                    ),
+                  );
+                }
+              },
+              child: getContainer(context, 'Submit'),
+            )
           ],
         );
       default:
@@ -355,5 +409,50 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
         _currentStep--;
       }
     });
+  }
+
+  void _showVehicleType(BuildContext context) {
+    showModalBottomSheet(
+      backgroundColor: Colors.white,
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              ListTile(
+                title: Text('Car', style: GoogleFonts.poppins(fontSize: 16)),
+                onTap: () {
+                  setState(() {
+                    vehicleType.text = 'Car';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Motorcycle',
+                    style: GoogleFonts.poppins(fontSize: 16)),
+                onTap: () {
+                  setState(() {
+                    vehicleType.text = 'Motorcycle';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                title: Text('Van', style: GoogleFonts.poppins(fontSize: 16)),
+                onTap: () {
+                  setState(() {
+                    vehicleType.text = 'Van';
+                  });
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

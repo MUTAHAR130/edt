@@ -26,8 +26,11 @@ class GoogleButton {
             bgColor: Colors.red,
             textColor: Colors.white);
       } else {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => BottomBar()));
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => BottomBar()),
+          (route) => false,
+        );
         await GoogleAuthService().storeUserData(user, null,context);
       }
     } else {
@@ -54,9 +57,10 @@ class GoogleButton {
           textColor: Colors.white,
         );
       } else {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => BottomBar()),
+          (route) => false,
         );
       }
     } else {

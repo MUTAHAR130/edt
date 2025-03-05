@@ -1,16 +1,20 @@
-import 'package:edt/pages/authentication/signup/services/phone_auth.dart';
+import 'dart:developer';
 import 'package:edt/pages/authentication/signup/set_password.dart';
+import 'package:edt/pages/authentication/login/forget_pass.dart';
+import 'package:edt/pages/authentication/signup/services/phone_auth.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class OtpScreen extends StatefulWidget {
   final String verificationId;
+  final String phoneNumber;
 
-  const OtpScreen({super.key, required this.verificationId});
+  const OtpScreen({super.key, required this.verificationId, required this.phoneNumber});
 
   @override
   _OtpScreenState createState() => _OtpScreenState();
@@ -18,28 +22,67 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   String enteredOtp = '';
+  bool _isLoading = false;
 
-  void verifyOtp() {
-  PhoneAuthHelper.verifyOtp(
-    verificationId: widget.verificationId,
-    smsCode: enteredOtp,
-    onError: (FirebaseAuthException e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? 'Invalid OTP'),
-          backgroundColor: Colors.red,
-        ),
+  Future<void> verifyOtp() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+    EasyLoading.show(status: "Verifying OTP...");
+    try {
+      bool success = await PhoneAuthHelper.verifyOtp(
+        verificationId: widget.verificationId,
+        smsCode: enteredOtp,
+        onError: (FirebaseAuthException e) {
+          EasyLoading.showError(e.message ?? "Invalid OTP");
+          throw e;
+        },
       );
-    },
-  ).then((success) {
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => SetPassword(role: 'Passenger',)),
-      );
+      if (success) {
+        EasyLoading.showSuccess("OTP Verified");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => SetPassword(role: 'Passenger')),
+        );
+      }
+    } catch (e) {
+      log('OTP verification error: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      EasyLoading.dismiss();
     }
-  });
-}
+  }
+
+  Future<void> resendOtp() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+    EasyLoading.show(status: "Resending OTP...");
+    try {
+      await PhoneAuthHelper.sendOtp(
+        phoneNumber: widget.phoneNumber,
+        context: context,
+        onCodeSent: (String newVerificationId) {
+          EasyLoading.showSuccess("OTP Resent");
+        },
+        onError: (FirebaseAuthException error) {
+          EasyLoading.showError(error.message ?? "Failed to resend OTP");
+        },
+      );
+    } catch (e) {
+      log('Resend OTP error: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      EasyLoading.dismiss();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +131,7 @@ class _OtpScreenState extends State<OtpScreen> {
           ),
           SizedBox(height: 20),
           GestureDetector(
-            onTap: () {
-              // Resend OTP Logic
-            },
+            onTap: resendOtp,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -103,7 +144,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   ),
                 ),
                 Text(
-                  'Resend again',
+                  ' Resend again',
                   style: GoogleFonts.poppins(
                     color: Color(0xff0F69DB),
                     fontSize: 15,
@@ -118,7 +159,9 @@ class _OtpScreenState extends State<OtpScreen> {
             padding: const EdgeInsets.all(20.0),
             child: GestureDetector(
               onTap: verifyOtp,
-              child: getContainer(context, 'Verify'),
+              child: getContainer(
+                context,'Verify',
+              ),
             ),
           )
         ],

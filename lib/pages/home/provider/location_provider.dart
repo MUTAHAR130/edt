@@ -13,6 +13,7 @@ class LocationProvider with ChangeNotifier {
   double _currentLatitude = 0;
   double _currentLongitude = 0; 
   String? _currentAddress;
+
   LatLng? _selectedLocation;
   String? _selectedAddress;
   double? _selectedLatitude;
@@ -60,6 +61,16 @@ class LocationProvider with ChangeNotifier {
     notifyListeners(); 
   }
 
+  set currentLocation(LatLng? value) { 
+    _currentLocation = value;
+    notifyListeners(); 
+  }
+
+  set selectedLocation(LatLng? value) { 
+    _selectedLocation = value;
+    notifyListeners(); 
+  }
+
   Future<void> getCurrentLocation() async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
@@ -78,8 +89,8 @@ class LocationProvider with ChangeNotifier {
       );
 
       _currentLocation = LatLng(position.latitude, position.longitude);
-      _currentLatitude = position.latitude; // Store latitude
-      _currentLongitude = position.longitude; // Store longitude
+      _currentLatitude = position.latitude;
+      _currentLongitude = position.longitude;
       _currentAddress = await getAddressFromCoordinates(position.latitude, position.longitude);
       log('ADDRESSSSSS $currentAddress');
 
@@ -93,8 +104,13 @@ class LocationProvider with ChangeNotifier {
     log("setSelectedLocation called with location: $location, address: $address");
     _selectedLocation = location;
     _selectedAddress = address;
+    _selectedLatitude = location.latitude;
+    _selectedLongitude = location.longitude; 
     notifyListeners();
+    if (_currentLocation != null) {
     fetchRoutePolyline();
+  }
+    // fetchRoutePolyline();
   }
 
   // Function to fetch address from coordinates

@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 34,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
-                          color: Color.fromARGB(20, 106, 219, 26),
+                          color: Color(0xffe7f0fc).withOpacity(0.8),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 34,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
-                          color: Color.fromARGB(20, 106, 219, 26),
+                          color: Color(0xffe7f0fc).withOpacity(0.8),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -184,19 +184,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ))
         ],
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 160.0),
-        child: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4), color: Color(0xffffffff)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [SvgPicture.asset('assets/icons/location_button.svg')],
-          ),
-        ),
-      ),
+      // floatingActionButton: Padding(
+      //   padding: const EdgeInsets.only(bottom: 160.0),
+      //   child: Container(
+      //     width: 34,
+      //     height: 34,
+      //     decoration: BoxDecoration(
+      //         borderRadius: BorderRadius.circular(4), color: Color(0xffffffff)),
+      //     child: Column(
+      //       mainAxisAlignment: MainAxisAlignment.center,
+      //       children: [SvgPicture.asset('assets/icons/location_button.svg')],
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

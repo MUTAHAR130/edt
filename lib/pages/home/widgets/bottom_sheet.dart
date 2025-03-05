@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:edt/pages/home/provider/location_provider.dart';
-import 'package:edt/pages/home/widgets/cancel_ride.dart';
 import 'package:edt/pages/home/widgets/sheet_text_field.dart';
 import 'package:edt/pages/map_route_page/map_route_page.dart';
 import 'package:edt/pages/search_location/search_location.dart';
@@ -9,14 +6,14 @@ import 'package:edt/utils/helper.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:svg_flutter/svg.dart';
 
 final GlobalKey<State<StatefulWidget>> _bottomSheetKey = GlobalKey();
 
 void bottomSheet(BuildContext context, LocationProvider locPro) {
+
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
     builder: (BuildContext context) {
       return StatefulBuilder(
         key: GlobalKey<State<StatefulWidget>>(),
@@ -31,15 +28,13 @@ void bottomSheet(BuildContext context, LocationProvider locPro) {
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.4,
-                ),
+            child: FractionallySizedBox(
+              heightFactor: 0.5,
+              child: SingleChildScrollView(
                 child: Container(
-                  height: getHeight(context) * 0.4,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 130.0),
@@ -65,16 +60,16 @@ void bottomSheet(BuildContext context, LocationProvider locPro) {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: SheetTextField(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SearchLocation(
-                                          locationType: 'From',
-                                        )));
-                          },
+                          // onTap: () {
+                          //   Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //           builder: (context) => SearchLocation(
+                          //                 locationType: 'From',
+                          //               )));
+                          // },
                           readOnly: true,
-                          hintText: locPro.currentAddress ?? '',
+                          hintText: locPro.currentAddress ?? 'Current Location',
                           imagePath: 'assets/icons/loc_from.svg',
                         ),
                       ),
@@ -82,14 +77,14 @@ void bottomSheet(BuildContext context, LocationProvider locPro) {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20.0),
                         child: SheetTextField(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => SearchLocation(
-                                          locationType: 'To',
-                                        )));
-                          },
+                          // onTap: () {
+                          //   Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //           builder: (context) => SearchLocation(
+                          //                 locationType: 'To',
+                          //               )));
+                          // },
                           readOnly: true,
                           hintText: locPro.selectedAddress ?? '',
                           imagePath: 'assets/icons/loc_to.svg',
@@ -176,14 +171,12 @@ void bottomSheet(BuildContext context, LocationProvider locPro) {
                         child: GestureDetector(
                           onTap: () async {
                             Navigator.pop(context);
+                            
                             // await locPro.fetchRoutePolyline();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MapScreen(
-                                    // currentLocation: LatLng(locPro.currentLatitude, locPro.currentLongitude),
-                                    // selectedLocation: LatLng(locPro.selectedLatitude!, locPro.selectedLongitude!),
-                                    ),
+                                builder: (context) => MapScreen(),
                               ),
                             );
                             // cancelRideSheet(context);

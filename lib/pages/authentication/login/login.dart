@@ -1,15 +1,20 @@
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edt/pages/authentication/login/forget_pass.dart';
 import 'package:edt/pages/authentication/login/services/login_service.dart';
-import 'package:edt/pages/authentication/login/verify_screen.dart';
 import 'package:edt/pages/authentication/signup/services/google_signin.dart';
+import 'package:edt/pages/authentication/signup/signup.dart';
 import 'package:edt/pages/authentication/signup/widgets/google_container.dart';
+import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
+import 'package:edt/widgets/password_field.dart';
 import 'package:edt/widgets/text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,43 +30,89 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final LoginService _loginService = LoginService();
 
-  void _login(String emailOrPhone,String password) async {
-    String email = emailOrPhone;
-    String pass = password;
+  void _login(String emailOrPhone, String password) async {
+  if (emailOrPhone.isEmpty || password.isEmpty) {
+    EasyLoading.showError("Please fill in all fields");
+    return;
+  }
 
-    if (email.isEmpty || pass.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields')),
-      );
-      return;
-    }
+  setState(() {
+    _isLoading = true;
+  });
+  EasyLoading.show(status: "Logging in...");
 
-    setState(() {
-      _isLoading = true;
-    });
+  try {
+    var user = await _loginService.loginUser(emailOrPhone, password);
+    
+    if (user != null) {
+      var rolePro=Provider.of<UserRoleProvider>(context,listen: false);
+      String? userRole = rolePro.role;
 
-    try {
-      var user = await _loginService.loginUser(email, pass);
-      if (user != null) {
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => VerifyScreen()),
-        // );
-        Navigator.pushReplacement(
+      if (userRole == null) {
+        EasyLoading.showError("User role not found");
+        return;
+      }
+
+      bool userExists = false;
+      
+      if (userRole == 'Passenger') {
+        userExists = await _checkUserExistsInCollection(
+          emailOrPhone, 
+          'passengers', 
+          'Passenger'
+        );
+      } else if (userRole == 'Driver') {
+        userExists = await _checkUserExistsInCollection(
+          emailOrPhone, 
+          'drivers', 
+          'Driver'
+        );
+      } else {
+        EasyLoading.showError("Invalid Credentials");
+        return;
+      }
+
+      if (userExists) {
+        EasyLoading.showSuccess("Login Successful");
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => BottomBar()),
+          (route) => false
         );
+      } else {
+        EasyLoading.showError("User does not exist");
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
+  } catch (e) {
+    EasyLoading.showError("Login failed: $e");
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+    EasyLoading.dismiss();
   }
+}
+
+// Helper method to check user existence in a specific collection
+Future<bool> _checkUserExistsInCollection(
+  String email, 
+  String collectionName, 
+  String roleField
+) async {
+  try {
+    // Assuming you're using Firebase Firestore
+    var userSnapshot = await FirebaseFirestore.instance
+        .collection(collectionName)
+        .where('email', isEqualTo: email)
+        .where('role', isEqualTo: roleField)
+        .get();
+
+    return userSnapshot.docs.isNotEmpty;
+  } catch (e) {
+    print('Error checking user existence: $e');
+    return false;
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -95,41 +146,40 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 height: 20,
               ),
-              CustomTextFormField(
-                hintText: 'Enter Your Password',
-                imagePath: 'assets/icons/visibility_off.svg',
-                controller: password,
-              ),
+              PasswordField(
+                  hintText: 'Enter Your Password', controller: password),
               SizedBox(
                 height: 10,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ForgetPasswordScreen()));
-                    },
-                    child: Text(
-                      'Forget Password?',
-                      style: GoogleFonts.poppins(
-                          color: Color(0xff0F69DB),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  )
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     GestureDetector(
+              //       onTap: () {
+              //         Navigator.push(
+              //             context,
+              //             MaterialPageRoute(
+              //                 builder: (context) => ForgetPasswordScreen()));
+              //       },
+              //       child: Text(
+              //         'Forget Password?',
+              //         style: GoogleFonts.poppins(
+              //             color: Color(0xff0F69DB),
+              //             fontSize: 14,
+              //             fontWeight: FontWeight.w500),
+              //       ),
+              //     )
+              //   ],
+              // ),
               SizedBox(
                 height: 20,
               ),
               GestureDetector(
                   onTap: () {
                     log('tapped');
-                    _isLoading ? null : _login(emailOrPhone.text,password.text);
+                    _isLoading
+                        ? null
+                        : _login(emailOrPhone.text, password.text);
                     // Navigator.push(
                     //     context,
                     //     MaterialPageRoute(
@@ -162,10 +212,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      GoogleButton().loginWithGoogle(context);
-                    },
-                    child: CustomContainer(svgPicture: 'assets/icons/gmail.svg')),
+                      onTap: () {
+                        GoogleButton().loginWithGoogle(context);
+                      },
+                      child: CustomContainer(
+                          svgPicture: 'assets/icons/gmail.svg')),
                   // CustomContainer(svgPicture: 'assets/icons/facebook.svg'),
                 ],
               ),
@@ -173,7 +224,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 50,
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => SignupScreen()));
+                },
                 child: Row(
                   spacing: 7,
                   mainAxisAlignment: MainAxisAlignment.center,

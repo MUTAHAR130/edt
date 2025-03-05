@@ -1,5 +1,7 @@
 import 'package:edt/pages/boarding/boarding.dart';
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/utils/helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
@@ -24,7 +26,17 @@ class _SplashScreenState extends State<SplashScreen> {
     });
 
     Timer(const Duration(seconds: 5), () async {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OnBoarding()));
+      if (FirebaseAuth.instance.currentUser != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BottomBar()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => OnBoarding()),
+        );
+      }
     });
   }
 

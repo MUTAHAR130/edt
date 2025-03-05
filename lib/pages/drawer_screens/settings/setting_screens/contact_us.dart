@@ -1,12 +1,70 @@
-import 'package:edt/pages/authentication/signup/widgets/phone_field.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:edt/pages/bottom_bar/provider/profile_provider.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-class ContactUsScreen extends StatelessWidget {
+class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
 
+  @override
+  State<ContactUsScreen> createState() => _ContactUsScreenState();
+}
+
+class _ContactUsScreenState extends State<ContactUsScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+
+  void _populateControllers() {
+    final profile = Provider.of<UserProfileProvider>(context, listen: false);
+    _nameController.text = profile.username;
+    _emailController.text = profile.email;
+    _phoneController.text = profile.phone;
+  }
+
+  Future<void> _sendMessage() async {
+    if (_nameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _messageController.text.isEmpty) {
+      EasyLoading.showError("All fields are required");
+      return;
+    }
+    try {
+      EasyLoading.show(status: "Sending...");
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        EasyLoading.showError("User not logged in");
+        return;
+      }
+      await FirebaseFirestore.instance.collection("contact_us").add({
+        "uid": user.uid,
+        "name": _nameController.text,
+        "email": _emailController.text,
+        "phone": _phoneController.text,
+        "message": _messageController.text,
+        "timestamp": FieldValue.serverTimestamp(),
+      });
+      EasyLoading.showSuccess("Message Sent Successfully");
+      _nameController.clear();
+      _emailController.clear();
+      _phoneController.clear();
+      _messageController.clear();
+    } catch (e) {
+      EasyLoading.showError("Failed to send message");
+    }
+  }@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _populateControllers();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,33 +152,27 @@ class ContactUsScreen extends StatelessWidget {
                       fontSize: 16,
                       color: Color(0xff414141)),
                 ),
-                SizedBox(
-                  height: 16,
-                ),
-                CustomTextFormField(hintText: 'Name'),
-                SizedBox(
-                  height: 16,
-                ),
-                CustomTextFormField(hintText: 'Email'),
-                SizedBox(
-                  height: 16,
-                ),
-                PhoneInputField(),
-                SizedBox(
-                  height: 16,
-                ),
+                const SizedBox(height: 16),
+                CustomTextFormField(
+                    controller: _nameController, hintText: 'Name'),
+                const SizedBox(height: 16),
+                CustomTextFormField(
+                    controller: _emailController, hintText: 'Email'),
+                const SizedBox(height: 16),
+                CustomTextFormField(
+                    controller: _phoneController, hintText: 'Phone'),
+                const SizedBox(height: 16),
                 SizedBox(
                   height: 120.0,
                   child: TextField(
+                    controller: _messageController,
                     textAlignVertical: TextAlignVertical.top,
                     textAlign: TextAlign.start,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: 'Write your text',
                       hintStyle: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 14,
-                          color: Color(0xffd0d0d0)),
+                          color: Color(0xffb8b8b8), fontSize: 15),
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
                       enabledBorder: OutlineInputBorder(
@@ -134,8 +186,11 @@ class ContactUsScreen extends StatelessWidget {
                     expands: true,
                   ),
                 ),
-                SizedBox(height: 150,),
-                getContainer(context, 'Send Message')
+                const SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: getContainer(context, 'Send Message'),
+                ),
               ],
             ),
           ),

@@ -12,7 +12,9 @@ class SignupProvider with ChangeNotifier {
   String _driverStreet = '';
   String _driverCity = '';
   String _driverDistrict = '';
+  String _driverImage = '';
   //driver step2
+   String _driverVehicleName = '';
    String _driverVehicleType = '';
    String _driverVehicleNumber = '';
    String _driverVehicleColor = '';
@@ -34,7 +36,9 @@ class SignupProvider with ChangeNotifier {
   String get driverStreet => _driverStreet;
   String get driverCity => _driverCity;
   String get driverDistrict => _driverDistrict;
+  String get driverImage => _driverImage;
   //driver getter 2
+  String get driverVehicleName => _driverVehicleName;
   String get driverVehicleType => _driverVehicleType;
   String get driverVehicleNumber => _driverVehicleNumber;
   String get driverVehicleColor => _driverVehicleColor;
@@ -43,6 +47,11 @@ class SignupProvider with ChangeNotifier {
   String get driverDrivingLicense => _driverDrivingLicense;
   String get driverVehicleRegistrationCertificate => _driverVehicleRegistrationCertificate;
   String get driverVehiclePicture => _driverVehiclePicture;
+
+   void setDriverImage(String imagePath) {
+    _driverImage = imagePath;
+    notifyListeners();
+  }
 
   void setValues(String name, String email, String phone, String gender) {
     _name = name;
@@ -58,22 +67,26 @@ class SignupProvider with ChangeNotifier {
       String driverEmail,
       String driverStreet,
       String driverCity,
-      String driverDistrict) {
+      String driverDistrict,
+      String driverImage) {
     _driverFullname = driverFullname;
     _driverPhone = driverPhone;
     _driverEmail = driverEmail;
     _driverStreet = driverStreet;
     _driverCity = driverCity;
     _driverDistrict = driverDistrict;
+    _driverImage = driverImage;
     notifyListeners();
   }
 
 
   void setDriverValue2(
+    String driverVehicleName,
       String driverVehicleType,
       String driverVehicleNumber,
       String driverVehicleColor,
       ) {
+        _driverVehicleName=driverVehicleName;
     _driverVehicleType = driverVehicleType;
     _driverVehicleNumber = driverVehicleNumber;
     _driverVehicleColor = driverVehicleColor;

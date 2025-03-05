@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:svg_flutter/svg.dart';
 
-Widget getRideContainer(context) {
+Widget getRideContainer(context,String vehicleName) {
   return Container(
     height: 80,
     decoration: BoxDecoration(
@@ -26,7 +26,7 @@ Widget getRideContainer(context) {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Mustang Shelby GT',
+                    vehicleName,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       color: Color(0xff5a5a5a),

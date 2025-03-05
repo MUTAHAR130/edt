@@ -1,7 +1,10 @@
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
+import 'package:edt/pages/bottom_bar/provider/bottombar_provider.dart';
 import 'package:edt/utils/helper.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:svg_flutter/svg.dart';
 
 void complainDialog(BuildContext context) {
@@ -24,8 +27,7 @@ void complainDialog(BuildContext context) {
                         Navigator.pop(context);
                       },
                       child: Padding(
-                        padding: const EdgeInsets.
-                        only(right: 15.0,top: 15),
+                        padding: const EdgeInsets.only(right: 15.0, top: 15),
                         child: Icon(
                           Icons.close,
                           color: Color(0xff5A5A5A),
@@ -34,7 +36,9 @@ void complainDialog(BuildContext context) {
                     ),
                   ),
                   SvgPicture.asset('assets/icons/payment_success.svg'),
-                  SizedBox(height: 24,),
+                  SizedBox(
+                    height: 24,
+                  ),
                   Text(
                     'Send Successful',
                     style: GoogleFonts.poppins(
@@ -42,7 +46,9 @@ void complainDialog(BuildContext context) {
                         fontWeight: FontWeight.w500,
                         color: Color(0xff2a2a2a)),
                   ),
-                  SizedBox(height: 7,),
+                  SizedBox(
+                    height: 7,
+                  ),
                   Text(
                     'Your complain has been send successful',
                     textAlign: TextAlign.center,
@@ -51,10 +57,23 @@ void complainDialog(BuildContext context) {
                         fontWeight: FontWeight.w500,
                         color: Color(0xff898989)),
                   ),
-                  SizedBox(height: 32,),
+                  SizedBox(
+                    height: 32,
+                  ),
                   Padding(
-                    padding: const EdgeInsets.only(left: 11,right: 11,bottom: 24),
-                    child: getContainer(context, 'Back Home'),
+                    padding:
+                        const EdgeInsets.only(left: 11, right: 11, bottom: 24),
+                    child: GestureDetector(
+                        onTap: () {
+                          Provider.of<BottomNavProvider>(context,listen: false).setIndex(0);
+                          Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => BottomBar()),
+                                  (route)=>false
+                                  );
+                        },
+                        child: getContainer(context, 'Back Home')),
                   )
                 ],
               )),

@@ -1,5 +1,5 @@
 import 'dart:developer';
-
+import 'package:edt/main.dart';
 import 'package:edt/pages/home/widgets/dotted_divider.dart';
 import 'package:edt/pages/home/widgets/feedback_sheet.dart';
 import 'package:edt/utils/helper.dart';
@@ -8,7 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:svg_flutter/svg.dart';
 
-void showPaymentSuccess(BuildContext context) {
+void showPaymentSuccess(String price) {
+  final BuildContext? context = 
+      navigatorKey.currentState?.overlay?.context;
+  
+  if (context == null) {
+    print('Unable to show payment success dialog: No active context');
+    return;
+  }
+
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -47,7 +55,7 @@ void showPaymentSuccess(BuildContext context) {
                 ),
                 SizedBox(height: 7,),
                 Text(
-                  'Your money has been successfully sent to Sergio Ramasis',
+                  'Your money has been successfully sent!',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                       fontSize: 12,
@@ -64,7 +72,7 @@ void showPaymentSuccess(BuildContext context) {
                       color: Color(0xff5a5a5a)),
                 ),
                 Text(
-                  '\$200',
+                  '\$$price',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                       fontSize: 34,
@@ -84,7 +92,7 @@ void showPaymentSuccess(BuildContext context) {
                 ),
                 SizedBox(height: 8,),
                 Text(
-                  'Youe feedback will help us to improve your driving experience better',
+                  'Your feedback will help us to improve your driving experience better',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                       fontSize: 12,
@@ -96,6 +104,7 @@ void showPaymentSuccess(BuildContext context) {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: GestureDetector(
                     onTap: () {
+                      Navigator.pop(context);
                       getFeedbackSheet(context);
                     },
                     child: getContainer(context, 'Please Feedback')),

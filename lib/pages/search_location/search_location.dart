@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:svg_flutter/svg.dart';
 
 class SearchLocation extends StatefulWidget {
-  final String? locationType; // Add locationType as an optional parameter
+  final String? locationType;
 
   const SearchLocation({super.key, this.locationType});
 
@@ -28,7 +28,6 @@ class _SearchLocationState extends State<SearchLocation> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
 
-    // Pre-fill the search bar if locationType is provided
     if (widget.locationType == 'From') {
       var locPro = Provider.of<LocationProvider>(context, listen: false);
       _searchController.text = locPro.currentAddress ?? ''; 
@@ -56,41 +55,41 @@ class _SearchLocationState extends State<SearchLocation> {
   }
 
   Future<void> _onPlaceSelected(PlaceSearchResult place) async {
-    var locPro = Provider.of<LocationProvider>(context, listen: false);
-    locPro.getCurrentLocation();
-    final details = await PlacesService().getPlaceDetails(place.placeId);
-    if (details != null) {
-      String address = details.address;
-      double latitude = details.latitude;
-      double longitude = details.longitude;
+  var locPro = Provider.of<LocationProvider>(context, listen: false);
+  final details = await PlacesService().getPlaceDetails(place.placeId);
+  
+  if (details != null) {
+    String address = details.address;
+    double latitude = details.latitude;
+    double longitude = details.longitude;
+    LatLng selectedLatLng = LatLng(latitude, longitude);
 
-       LatLng selectedLatLng = LatLng(latitude, longitude);
+    log('I SEARCHED THE LOACTION HERE $latitude $longitude');
 
-    // Call setSelectedLocation with the LatLng object and address
-    locPro.setSelectedLocation(selectedLatLng, address);
-
-      if (widget.locationType == 'From') {
-        locPro.currentAddress = address;
-        locPro.currentLatitude = latitude;
-        locPro.currentLongitude = longitude;
-      } else if (widget.locationType == 'To') {
-        locPro.selectedAddress = address;
-        locPro.selectedLatitude = latitude;
-        locPro.selectedLongitude = longitude;
-      } else {
-        // Handle the default case (no locationType provided)
-        locPro.selectedAddress = address;
-        locPro.selectedLatitude = latitude;
-        locPro.selectedLongitude = longitude;
-      }
-
-      log("Address: ${locPro.selectedAddress}");
-      log("Latitude: ${locPro.selectedLatitude}");
-      log("Longitude: ${locPro.selectedLongitude}");
-      Navigator.pop(context, details);
-      bottomSheet(context, locPro);
+    if (widget.locationType == 'From') {
+      locPro.currentAddress = address;
+      locPro.currentLatitude = latitude;
+      locPro.currentLongitude = longitude;
+      locPro.currentLocation = selectedLatLng;
+    } else if (widget.locationType == 'To') {
+      locPro.selectedAddress = address;
+      locPro.selectedLatitude = latitude;
+      locPro.selectedLongitude = longitude;
+      locPro.selectedLocation = selectedLatLng;
+    } else {
+      locPro.selectedAddress = address;
+      locPro.selectedLatitude = latitude;
+      locPro.selectedLongitude = longitude;
+      locPro.selectedLocation = selectedLatLng;
     }
+
+    // log('SELECTED LAT LNG ISS $selectedLatLng');
+    // log('SELECTED LAT LNG OF PASSEGER ISS ${locPro.currentLatitude} ${locPro.currentLongitude}');
+    // log('SELECTED LAT LNG OF DRIVER ISS ${locPro.selectedLatitude} ${locPro.selectedLongitude}');
+    Navigator.pop(context, details);
+    bottomSheet(context, locPro);
   }
+}
 
   @override
   void dispose() {
@@ -100,6 +99,7 @@ class _SearchLocationState extends State<SearchLocation> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<LocationProvider>(context, listen: false).getCurrentLocation();
     return Scaffold(
       body: SingleChildScrollView(
         child: SafeArea(

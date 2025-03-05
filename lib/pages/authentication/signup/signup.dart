@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:edt/pages/authentication/login/login.dart';
 import 'package:edt/pages/authentication/signup/otp.dart';
 import 'package:edt/pages/authentication/signup/provider/signup_provider.dart';
 import 'package:edt/pages/authentication/signup/services/google_signin.dart';
@@ -13,6 +14,7 @@ import 'package:edt/widgets/text_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:svg_flutter/svg.dart';
@@ -30,6 +32,7 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController gender = TextEditingController();
   TextEditingController phone = TextEditingController();
   String completePhoneNumber = '';
+  bool _isLoading = false;
   @override
   Widget build(BuildContext context) {
     var userPro = Provider.of<UserRoleProvider>(context);
@@ -153,49 +156,76 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 20,
                       ),
                       GestureDetector(
-                          onTap: () {
-                            if (name.text.isEmpty ||
-                                email.text.isEmpty ||
-                                phone.text.isEmpty ||
-                                gender.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content:
-                                        Text("Please fill all the fields")),
-                              );
-                              return;
-                            } else {
-                              signupPro.setValues(name.text, email.text,
-                                  phone.text, gender.text);
-                              log('${signupPro.name},${signupPro.email},${signupPro.phone},${signupPro.gender}');
-                              PhoneAuthHelper.sendOtp(
-                                  phoneNumber: phone.text,
-                                  context: context,
-                                  onCodeSent: (String verificationId) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => OtpScreen(
-                                            verificationId: verificationId),
-                                      ),
-                                    );
-                                  },
-                                  onError: (FirebaseAuthException error) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(error.message ??
-                                            "An error occurred"),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  });
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => OtpScreen()));
-                            }
-                          },
-                          child: getContainer(context, 'Sign up')),
+                        onTap: () async {
+                          if (_isLoading) return;
+
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          EasyLoading.show(status: "Loading...");
+
+                          if (name.text.isEmpty ||
+                              email.text.isEmpty ||
+                              phone.text.isEmpty ||
+                              gender.text.isEmpty) {
+                            EasyLoading.showError("Please fill in all fields");
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            return;
+                          }
+
+                          if (!email.text.contains('@')) {
+                            EasyLoading.showError(
+                                "Please enter a valid email address");
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            return;
+                          }
+
+                          try {
+                            signupPro.setValues(
+                                name.text, email.text, phone.text, gender.text);
+
+                            await PhoneAuthHelper.sendOtp(
+                              phoneNumber: phone.text,
+                              context: context,
+                              onCodeSent: (String verificationId) {
+                                EasyLoading.dismiss();
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => OtpScreen(
+                                      verificationId: verificationId,
+                                      phoneNumber: phone.text,
+                                    ),
+                                  ),
+                                );
+                              },
+                              onError: (FirebaseAuthException error) {
+                                EasyLoading.showError(
+                                    error.message ?? "An error occurred");
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              },
+                            );
+                          } catch (e) {
+                            EasyLoading.showError(e.toString());
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          } finally {
+                            EasyLoading.dismiss();
+                          }
+                        },
+                        child: getContainer(context, 'Sign up'),
+                      ),
                       SizedBox(
                         height: 20,
                       ),
@@ -235,7 +265,15 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 50,
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                            ),
+                          );
+                        },
                         child: Row(
                           spacing: 7,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -266,6 +304,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _showRoleSelectionBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       context: context,
       builder: (BuildContext context) {
         return Container(
