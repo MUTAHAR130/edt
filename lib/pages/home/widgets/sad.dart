@@ -7,6 +7,7 @@ import 'package:svg_flutter/svg.dart';
 
 void sadDialog(BuildContext context) {
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return Dialog(
@@ -15,25 +16,9 @@ void sadDialog(BuildContext context) {
         child: IntrinsicHeight(
           child: SizedBox(
               width: getWidth(context) * 0.85,
-              // height: getHeight(context) * 0.61,
               child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.
-                        only(right: 15.0,top: 15),
-                        child: Icon(
-                          Icons.close,
-                          color: Color(0xff5A5A5A),
-                        ),
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: 24,),
                   SvgPicture.asset('assets/icons/sad.svg'),
                   SizedBox(height: 24,),
                   Text(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/bottom_bar/provider/bottombar_provider.dart';
 import 'package:edt/pages/bottom_bar/provider/profile_provider.dart';
@@ -7,9 +8,11 @@ import 'package:edt/pages/expense_tracking/provider/expense_provider.dart';
 import 'package:edt/pages/home/home.dart';
 import 'package:edt/pages/profile/profile.dart';
 import 'package:edt/widgets/drawer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:svg_flutter/svg.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class BottomBar extends StatefulWidget {
   BottomBar({super.key});
@@ -30,9 +33,9 @@ class _BottomBarState extends State<BottomBar> {
         .fetchPaymentAndExpenseData(userRole);
   });
     var userPro = Provider.of<UserRoleProvider>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // context.read<BottomNavProvider>().setIndex(0);
-    });
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //   _storeDeviceToken(userPro.role);
+  // });
     if (userPro.role == 'Driver') {
       Provider.of<UserProfileProvider>(context, listen: false)
           .loadUserProfile('drivers');
@@ -41,6 +44,57 @@ class _BottomBarState extends State<BottomBar> {
           .loadUserProfile('passengers');
     }
   }
+
+  Future<void> _storeDeviceToken(String userRole) async {
+  try {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+    
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken == null) return;
+    
+    final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
+    
+    final userDocRef = FirebaseFirestore.instance.collection(collectionName).doc(userId);
+    
+    await userDocRef.update({
+      'tokens': FieldValue.arrayUnion([fcmToken])
+    }).catchError((error) {
+      userDocRef.update({
+        'tokens': [fcmToken]
+      });
+    });
+    
+    print('FCM Token stored successfully for $userRole: $fcmToken');
+    
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      _updateDeviceToken(userRole, userId, fcmToken, newToken);
+    });
+    
+  } catch (e) {
+    print('Error storing device token: $e');
+  }
+}
+
+
+Future<void> _updateDeviceToken(String userRole, String userId, String oldToken, String newToken) async {
+  try {
+    final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
+    final userDocRef = FirebaseFirestore.instance.collection(collectionName).doc(userId);
+    
+    await userDocRef.update({
+      'tokens': FieldValue.arrayRemove([oldToken])
+    });
+    
+    await userDocRef.update({
+      'tokens': FieldValue.arrayUnion([newToken])
+    });
+    
+    print('FCM Token updated successfully for $userRole: $newToken');
+  } catch (e) {
+    print('Error updating device token: $e');
+  }
+}
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 

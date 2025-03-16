@@ -1,11 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/home/widgets/sad.dart';
 import 'package:edt/widgets/container.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class CancelReason extends StatefulWidget {
-  BuildContext context;
-  CancelReason({super.key,required this.context});
+  final BuildContext context;
+  final String? rideId;
+  final String? vehicleName;
+  final double? amount;
+  
+  CancelReason({super.key, required this.context, this.rideId,this.amount,this.vehicleName});
 
   @override
   State<CancelReason> createState() => _CancelReasonState();
@@ -13,6 +21,104 @@ class CancelReason extends StatefulWidget {
 
 class _CancelReasonState extends State<CancelReason> {
   final List<bool> _selectedIndices = List<bool>.filled(6, false);
+  final TextEditingController _otherReasonController = TextEditingController();
+  bool isLoading = false;
+  
+  @override
+  void dispose() {
+    _otherReasonController.dispose();
+    super.dispose();
+  }
+
+  Future<void> cancelRide() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      // Get the ride document
+      final rideDoc = await FirebaseFirestore.instance
+          .collection('rides')
+          .doc(user.uid)
+          .get();
+      
+      if (!rideDoc.exists) {
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+      
+      final rideData = rideDoc.data() as Map<String, dynamic>;
+      
+      String reason = '';
+      final reasons = [
+        'Waiting for long time',
+        'Unable to contact driver',
+        'Driver denied to go to destination',
+        'Driver denied to come to pickup',
+        'Wrong address shown',
+        'The price is not reasonable',
+      ];
+      
+      for (int i = 0; i < _selectedIndices.length; i++) {
+        if (_selectedIndices[i]) {
+          reason = reasons[i];
+          break;
+        }
+      }
+      
+      if (reason.isEmpty && _otherReasonController.text.isNotEmpty) {
+        reason = _otherReasonController.text;
+      }
+      
+      if (reason.isEmpty) {
+        reason = "No reason provided";
+      }
+      
+      var rolePro=Provider.of<UserRoleProvider>(context,listen: false);
+      await FirebaseFirestore.instance
+          .collection('history')
+          .doc(user.uid)
+          .set({
+        'passengerUid': user.uid,
+        'driverUid': rideData['driverId'] ?? '',
+        'price':widget.amount,
+        'rideId':widget.rideId,
+        'role':rolePro.role,
+        'status':'cancelled',
+        'timestamp': FieldValue.serverTimestamp(),
+        'vehicleName':widget.vehicleName,
+        'cancelReason': reason,
+        'ride': rideData,
+      });
+      
+      await FirebaseFirestore.instance
+          .collection('rides')
+          .doc(user.uid)
+          .delete();
+
+      sadDialog(context
+      // , onClose: () {
+      //   Navigator.popUntil(context, (route) => route.isFirst);
+      // }
+      );
+    } catch (e) {
+      print('Error cancelling ride: $e');
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to cancel ride. Please try again.')),
+      );
+    }
+    
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final reasons = [
@@ -140,6 +246,7 @@ class _CancelReasonState extends State<CancelReason> {
               SizedBox(
                 height: 120.0,
                 child: TextField(
+                  controller: _otherReasonController,
                   textAlignVertical: TextAlignVertical.top,
                   textAlign: TextAlign.start,
                   decoration: InputDecoration(
@@ -163,11 +270,12 @@ class _CancelReasonState extends State<CancelReason> {
                 ),
               ),
               SizedBox(height: 110,),
-              GestureDetector(
-                onTap: () {
-                  sadDialog(context);
-                },
-                child: getContainer(context, 'Submit'))
+              isLoading 
+                ? CircularProgressIndicator() 
+                : GestureDetector(
+                    onTap: cancelRide,
+                    child: getContainer(context, 'Submit')
+                  )
             ],
           ),
         )),

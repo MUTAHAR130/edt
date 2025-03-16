@@ -100,7 +100,7 @@ class HistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryList(String status,context) {
+  Widget _buildHistoryList(String status,context) { 
     var roleProvider=Provider.of<UserRoleProvider>(context);
       String role = roleProvider.role;
       String collectionName = role == 'Driver' ? 'drivers' : 'passengers';

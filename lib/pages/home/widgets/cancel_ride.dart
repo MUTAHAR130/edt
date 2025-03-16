@@ -31,6 +31,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
   String? vehicleName;
   String? driverUid;
   String? passengerUid;
+  String? rideId;
 
   double calculateDistance(LatLng start, LatLng end) {
     const double earthRadius = 6371;
@@ -48,6 +49,8 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
   Future<Map<String, dynamic>> fetchRideAndDriverData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return {};
+    rideId = user.uid;
+    
     DocumentSnapshot rideSnapshot = await FirebaseFirestore.instance
         .collection('rides')
         .doc(user.uid)
@@ -64,11 +67,11 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
     } catch (e) {
       price = 0.0;
     }
-    String driverPic = rideData['driverPic'] ?? '';
 
     String driverName = 'Driver';
     double? driverLat;
     double? driverLng;
+    String? driverImageUrl;
     if (driverId.isNotEmpty) {
       DocumentSnapshot driverSnapshot = await FirebaseFirestore.instance
           .collection('drivers')
@@ -77,6 +80,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
       if (driverSnapshot.exists) {
         final driverData = driverSnapshot.data() as Map<String, dynamic>;
         driverName = driverData['fullname'] ?? 'Driver';
+        driverImageUrl = driverData['driverImage'] ?? '';
         vehicleName = driverData['vehicleName'] ?? 'Car';
         try {
           driverLat = double.parse(driverData['latitude'].toString());
@@ -113,7 +117,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
       'driverName': driverName,
       'price': price,
       'distance': distance,
-      'driverPic': driverPic,
+      'driverPic': driverImageUrl,
       'passengerLat': passengerLat,
       'passengerLng': passengerLng,
       'destinationLat': destinationLat,
@@ -203,7 +207,6 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        // Driver image container.
                         Container(
                           width: 55,
                           height: 60,
@@ -240,6 +243,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                             padding: const EdgeInsets.only(left: 6.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   driverName,
@@ -267,23 +271,23 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
-                                // Rating row (to be implemented later).
-                                Row(
-                                  children: [
-                                    SvgPicture.asset('assets/icons/star.svg'),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '4.9 (531 reviews)',
-                                      textAlign: TextAlign.left,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color(0xffa0a0a0),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                // const SizedBox(height: 4),
+                                // // Rating row (to be implemented later).
+                                // Row(
+                                //   children: [
+                                //     SvgPicture.asset('assets/icons/star.svg'),
+                                //     const SizedBox(width: 4),
+                                //     Text(
+                                //       '4.9 (531 reviews)',
+                                //       textAlign: TextAlign.left,
+                                //       style: GoogleFonts.poppins(
+                                //         fontSize: 10,
+                                //         fontWeight: FontWeight.w400,
+                                //         color: const Color(0xffa0a0a0),
+                                //       ),
+                                //     ),
+                                //   ],
+                                // ),
                               ],
                             ),
                           ),
@@ -330,7 +334,6 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                     subtitle: 'Pay with PayPal',
                     isSelected: selectedOption == 'Payonner',
                     onTap: () async {
-                      setState(() => selectedOption = 'Payonner');
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -339,30 +342,13 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                             vehicleName: vehicleName,
                             driverUid:driverUid,
                             passengerUid:passengerUid,
+                            rideId: rideId,
                           ),
                         ),
                       );
                     },
                   ),
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                //   child: PaymentMethod(
-                //     iconPath: 'assets/icons/visa.svg',
-                //     title: '**** **** **** 8970',
-                //     subtitle: 'Expires: 12/26',
-                //     isSelected: selectedOption == 'Visa',
-                //     onTap: () async {
-                //       // setState(() => selectedOption = 'Visa');
-                //       // Navigator.push(
-                //       //   context,
-                //       //   MaterialPageRoute(
-                //       //     builder: (context) => PaymentConfirmation(),
-                //       //   ),
-                //       // );
-                //     },
-                //   ),
-                // ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -371,7 +357,12 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => CancelReason(context: context),
+                          builder: (context) => CancelReason(
+                            context: context,
+                            rideId: rideId,
+                            amount:price,
+                            vehicleName: vehicleName,
+                          ),
                         ),
                       );
                     },

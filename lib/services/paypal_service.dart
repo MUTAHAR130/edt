@@ -1,8 +1,11 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:edt/pages/home/widgets/payment_success.dart';
+import 'package:edt/services/notifications_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:edt/pages/home/widgets/payment_success.dart';
 
 class PayPalService {
   final String clientId =
@@ -24,8 +27,6 @@ class PayPalService {
       DocumentSnapshot passengerSnapshot = await passengerDoc.get();
       if (passengerSnapshot.exists) {
         double currentExpense = (passengerSnapshot.data() as Map<String, dynamic>)['totalExpense'] ?? 0.0;
-
-
         double updatedExpense = currentExpense + amount;
         await passengerDoc.update({'totalExpense': updatedExpense});
       }
@@ -73,6 +74,7 @@ class PayPalService {
     required String currency,
     required String passengerId,
     required String driverId,
+    required String rideId,
     String returnUrl = 'https://example.com/success',
     String cancelUrl = 'https://example.com/cancel',
   }) async {
@@ -155,7 +157,8 @@ class PayPalService {
           'paymentId': paymentId,
           'status': 'Pending',
           'timestamp': DateTime.now(),
-          'approvalUrl': approvalUrl
+          'approvalUrl': approvalUrl,
+          'rideId': rideId
         });
 
         return PaymentResult(
@@ -203,6 +206,17 @@ class PayPalService {
             state == 'completed' ||
             payerStatus == 'verified';
 
+        var paymentSnapshot = await FirebaseFirestore.instance
+            .collection('payments')
+            .doc(paymentId)
+            .get();
+
+        String passengerId = paymentSnapshot['passengerId'];
+        String driverId = paymentSnapshot['driverId'];
+        String amount = paymentSnapshot['amount'];
+        String rideId = paymentSnapshot['rideId'] ?? 'unknown';
+        double amountDouble = double.tryParse(amount) ?? 0.0;
+
         if (isActuallyPaid) {
           await FirebaseFirestore.instance
               .collection('payments')
@@ -214,20 +228,19 @@ class PayPalService {
             'payerStatus': payerStatus
           });
 
-          if (isActuallyPaid) {
-            var paymentSnapshot = await FirebaseFirestore.instance
-                .collection('payments')
-                .doc(paymentId)
-                .get();
-
-            String passengerId = paymentSnapshot['passengerId'];
-            String driverId = paymentSnapshot['driverId'];
-            double amount = double.tryParse(paymentSnapshot['amount']) ?? 0.0;
-
-            await updateUserExpenses(passengerId, driverId, amount);
-            showPaymentSuccess(amount.toString());
-
-          }
+          await updateUserExpenses(passengerId, driverId, amountDouble);
+          
+          await NotificationService.sendPaymentNotification(
+            passengerId: passengerId,
+            driverId: driverId,
+            amount: amount,
+            status: 'Completed',
+            paymentId: paymentId,
+            rideId: rideId,
+            currentUserId: FirebaseAuth.instance.currentUser?.uid,
+          );
+          
+          showPaymentSuccess(amount);
 
           return PaymentVerificationResult(
               success: true, message: 'Payment verified successfully');
@@ -240,6 +253,17 @@ class PayPalService {
             'paypalState': state,
             'payerStatus': payerStatus
           });
+
+          // Send notifications for cancelled payment
+          log('GOING TO SEND NOTIFICATION');
+          await NotificationService.sendPaymentNotification(
+            passengerId: passengerId,
+            driverId: driverId,
+            amount: amount,
+            status: 'Cancelled',
+            paymentId: paymentId,
+            rideId: rideId,
+          );
 
           return PaymentVerificationResult(
               success: false,
@@ -278,7 +302,8 @@ class PayPalService {
   }
 }
 
-// Custom result classes for better error handling
+
+
 class PaymentResult {
   final bool success;
   final String? paymentId;

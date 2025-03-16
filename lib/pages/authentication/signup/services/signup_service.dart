@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:edt/pages/authentication/signup/complete_profile.dart';
 import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
@@ -44,7 +45,6 @@ class SignupService {
               await uploadFile(passengerImagePath, "passenger_images");
         }
 
-        log('Updating Firestore with data: street=$street, city=$city, district=$district');
 
         await userRef.set({
           if (passengerImageUrl != null) 'passengerImage': passengerImageUrl,
@@ -85,6 +85,7 @@ class SignupService {
         password: password,
       );
       String uid = userCredential.user!.uid;
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
       await _firestore.collection('passengers').doc(uid).set({
         'username': username,
         'email': email,
@@ -92,6 +93,7 @@ class SignupService {
         'gender': gender,
         'role': role,
         'uid': uid,
+        'tokens': fcmToken != null ? [fcmToken] : [],
       });
       Navigator.pushAndRemoveUntil(
           context,
@@ -145,11 +147,7 @@ class SignupService {
       String vehiclePictureUrl =
           await uploadFile(vehiclePicture, "driver_documents");
 
-      log('DRIVER IMAGE URL $driverImageUrl');
-      log('DRIVER ID PROOF $idProofUrl');
-      log('DRIVER IMAGE URL $drivingLicenseUrl');
-      log('DRIVER IMAGE URL $vehicleRegistrationCertificateUrl');
-      log('DRIVER IMAGE URL $vehiclePictureUrl');
+          String? fcmToken = await FirebaseMessaging.instance.getToken();
 
       await _firestore.collection('drivers').doc(uid).set({
         'uid': uid,
@@ -168,7 +166,8 @@ class SignupService {
         'drivingLicense': drivingLicenseUrl,
         'vehicleRegistrationCertificate': vehicleRegistrationCertificateUrl,
         'vehiclePicture': vehiclePictureUrl,
-        'role':role
+        'role':role,
+        'tokens': fcmToken != null ? [fcmToken] : [],
       });
       Navigator.pushAndRemoveUntil(
           context,

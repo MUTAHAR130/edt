@@ -11,6 +11,7 @@ import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/password_field.dart';
 import 'package:edt/widgets/text_field.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,8 +72,14 @@ class _LoginScreenState extends State<LoginScreen> {
         EasyLoading.showError("Invalid Credentials");
         return;
       }
+      String collectionName = userRole == 'Passenger' ? 'passengers' : 'drivers';
 
       if (userExists) {
+        String? deviceToken = await FirebaseMessaging.instance.getToken();
+        
+        if (deviceToken != null) {
+          await _updateUserToken(emailOrPhone, collectionName, deviceToken);
+        }
         EasyLoading.showSuccess("Login Successful");
         Navigator.pushAndRemoveUntil(
           context,
@@ -93,14 +100,31 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// Helper method to check user existence in a specific collection
+Future<void> _updateUserToken(String email, String collectionName, String token) async {
+  try {
+    var userRef = FirebaseFirestore.instance.collection(collectionName).where('email', isEqualTo: email);
+    
+    var querySnapshot = await userRef.get();
+    if (querySnapshot.docs.isNotEmpty) {
+      var userDoc = querySnapshot.docs.first.reference;
+
+      await userDoc.update({
+        'tokens': FieldValue.arrayUnion([token])
+      });
+
+      log('FCM Token updated successfully');
+    }
+  } catch (e) {
+    log('Error updating user token: $e');
+  }
+}
+
 Future<bool> _checkUserExistsInCollection(
   String email, 
   String collectionName, 
   String roleField
 ) async {
   try {
-    // Assuming you're using Firebase Firestore
     var userSnapshot = await FirebaseFirestore.instance
         .collection(collectionName)
         .where('email', isEqualTo: email)

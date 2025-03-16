@@ -6,12 +6,14 @@ import 'package:edt/pages/boarding/provider/role_provider.dart';
 import 'package:edt/pages/bottom_bar/bottom_bar.dart';
 import 'package:edt/pages/home/widgets/payment_success.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:edt/services/notifications_service.dart';
 
 class RideDetailsScreen extends StatefulWidget {
   final String rideId;
@@ -36,6 +38,11 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
   LatLng? _pickupLocation;
   LatLng? _destinationLocation;
   Set<Marker> _markers = {};
+  bool _lastArrivedStatus = false;
+  bool _lastCompletedStatus = false;
+  String _lastPaymentStatus = '';
+  Set<String> _notifiedPaymentIds = {};
+  DateTime _sessionStartTime = DateTime.now();
 
   final double _ratePerKm = 1.0;
 
@@ -46,20 +53,39 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final userRoleProvider = Provider.of<UserRoleProvider>(context, listen: false);
+      final userRoleProvider =
+          Provider.of<UserRoleProvider>(context, listen: false);
       final String role = userRoleProvider.role;
       final driverDoc = await FirebaseFirestore.instance
           .collection('drivers')
           .doc(user.uid)
           .get();
-      
+
       final vehicleName = driverDoc.data()?['vehicleName'] ?? 'Unknown Vehicle';
+
+      final driverRef =
+          FirebaseFirestore.instance.collection('drivers').doc(user.uid);
+
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        final snapshot = await transaction.get(driverRef);
+
+        if (snapshot.exists) {
+          final data = snapshot.data();
+          if (data != null && data.containsKey('totalDeliveries')) {
+            int currentTotal = data['totalDeliveries'] ?? 0;
+            transaction
+                .update(driverRef, {'totalDeliveries': currentTotal + 1});
+          } else {
+            transaction.update(driverRef, {'totalDeliveries': 1});
+          }
+        }
+      });
 
       final rideDoc = await FirebaseFirestore.instance
           .collection('rides')
           .doc(widget.rideId)
           .get();
-      
+
       final price = rideDoc.data()?['price'] ?? 0.0;
       final roundedPrice = double.parse(price.toStringAsFixed(2));
       final passengerUid = rideDoc['passengerUid'] ?? '';
@@ -82,7 +108,6 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         'status': 'completed',
         'completedAt': FieldValue.serverTimestamp(),
       });
-
     } catch (e) {
       print('Error storing ride history: $e');
     }
@@ -124,6 +149,20 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       startLocationUpdates();
     } catch (e) {
       print('Error accepting ride: $e');
+    }
+  }
+
+  Future<String?> getPassengerImage(String? passengerUid) async {
+    if (passengerUid == null) return null;
+    try {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('passengers')
+          .doc(passengerUid)
+          .get();
+      return snapshot['passengerImage'];
+    } catch (e) {
+      print('Error fetching passenger image: $e');
+      return null;
     }
   }
 
@@ -320,6 +359,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     });
     return "\$${price.toStringAsFixed(2)}";
   }
+
   Future<void> rejectRide() async {
     try {
       await _storeRejectedRide();
@@ -333,26 +373,28 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
       print('Error rejecting ride: $e');
     }
   }
+
   Future<void> _storeRejectedRide() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      final userRoleProvider = Provider.of<UserRoleProvider>(context, listen: false);
+      final userRoleProvider =
+          Provider.of<UserRoleProvider>(context, listen: false);
       final String role = userRoleProvider.role;
-      
+
       final driverDoc = await FirebaseFirestore.instance
           .collection('drivers')
           .doc(user.uid)
           .get();
-      
+
       final vehicleName = driverDoc.data()?['vehicleName'] ?? 'Unknown Vehicle';
 
       final rideDoc = await FirebaseFirestore.instance
           .collection('rides')
           .doc(widget.rideId)
           .get();
-      
+
       final passengerUid = rideDoc.data()?['passengerUid'] ?? '';
 
       await FirebaseFirestore.instance.collection('history').add({
@@ -373,11 +415,114 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         'rejectedDrivers': FieldValue.arrayUnion([user.uid]),
         'lastRejectedAt': FieldValue.serverTimestamp(),
       });
-
     } catch (e) {
       print('Error storing rejected ride: $e');
     }
   }
+
+void _setupRideListener() {
+  final String driverUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+  if (driverUid.isEmpty) return;
+
+  // Listen for ride status changes
+  FirebaseFirestore.instance
+      .collection('rides')
+      .doc(widget.rideId)
+      .snapshots()
+      .listen((snapshot) {
+    if (!snapshot.exists) return;
+
+    final data = snapshot.data() as Map<String, dynamic>;
+    final bool arrived = data['arrived'] ?? false;
+    final bool completed = data['status'] == 'completed';
+    final double price = data['price'] ?? 0.0;
+
+    // Show local notification when status changes
+    if (arrived && _lastArrivedStatus == false) {
+      NotificationService.showLocalNotification(
+        'You have arrived at pickup location',
+        'Your passenger is waiting for you.',
+      );
+      _lastArrivedStatus = arrived;
+    }
+
+    if (completed && _lastCompletedStatus == false) {
+      NotificationService.showLocalNotification(
+        'Ride Completed',
+        'You have earned \$${price.toStringAsFixed(2)} from this ride.',
+      );
+      _lastCompletedStatus = completed;
+    }
+  });
+
+  // Listen for payments with timestamp filter
+  FirebaseFirestore.instance
+    .collection('payments')
+    .where('driverId', isEqualTo: driverUid)
+    .where('rideId', isEqualTo: widget.rideId)
+    .snapshots()
+    .listen((snapshot) {
+      for (var change in snapshot.docChanges) {
+        // Only process documents that were added or modified
+        if (change.type == DocumentChangeType.added || 
+            change.type == DocumentChangeType.modified) {
+          final data = change.doc.data() as Map<String, dynamic>;
+          
+          // Check if this payment update happened after we opened this screen
+          final Timestamp paymentTimestamp = data['timestamp'] as Timestamp? ?? 
+              Timestamp.fromDate(DateTime(2000)); // Default old date if null
+          
+          // Only process if the payment was created/updated after this screen was opened
+          if (paymentTimestamp.toDate().isAfter(_sessionStartTime)) {
+            final String paymentId = change.doc.id;
+            final String status = data['status'] ?? '';
+            final String amount = data['amount'] ?? '0.00';
+            final String notificationKey = '$paymentId:$status';
+            
+            if (!_notifiedPaymentIds.contains(notificationKey)) {
+              if (status == 'Completed') {
+                NotificationService.showLocalNotification(
+                  'Payment Received',
+                  'You received a payment of \$$amount from your passenger.',
+                );
+                _notifiedPaymentIds.add(notificationKey);
+              } else if (status == 'Cancelled') {
+                NotificationService.showLocalNotification(
+                  'Payment Cancelled',
+                  'Payment of \$$amount from your passenger was cancelled or failed.',
+                );
+                _notifiedPaymentIds.add(notificationKey);
+              }
+            }
+          }
+        }
+      }
+    });
+}
+
+  void _setupForegroundNotificationHandling() {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      NotificationService.showLocalNotification(
+        message.notification?.title, 
+        message.notification?.body
+      );
+    }
+  });
+}
+
+  
+@override
+void initState() {
+  super.initState();
+  _sessionStartTime = DateTime.now(); // Remember when we opened this screen
+  NotificationService.init();
+  _setupForegroundNotificationHandling();
+  _setupRideListener();
+}
 
   @override
   void dispose() {
@@ -489,18 +634,28 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                               shape: BoxShape.circle,
                               color: Colors.grey[200],
                             ),
-                            child: data['profilePicUrl'] != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(28),
-                                    child: Image.network(
-                                      data['profilePicUrl'],
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Icon(Icons.person),
-                                    ),
-                                  )
-                                : Icon(Icons.person),
+                            child: FutureBuilder<String?>(
+                              future: getPassengerImage(data['passengerUid']),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return CircularProgressIndicator();
+                                }
+                                final imageUrl = snapshot.data;
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(28),
+                                  child: imageUrl != null && imageUrl.isNotEmpty
+                                      ? Image.network(
+                                          imageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(Icons.person),
+                                        )
+                                      : Icon(Icons.person),
+                                );
+                              },
+                            ),
                           ),
                           SizedBox(width: 16),
                           Expanded(
@@ -593,7 +748,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                                       } else if (buttonState == "arrived") {
                                         final user =
                                             FirebaseAuth.instance.currentUser;
-                                            // print('UER ISS ${user!.uid}');
+                                        // print('UER ISS ${user!.uid}');
                                         if (user != null) {
                                           await FirebaseFirestore.instance
                                               .collection('rides')
@@ -710,6 +865,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
   // Helper widget: Location indicator.
   Widget _buildLocationIndicator() {
     return Column(
+      spacing: 12,
       children: [
         Icon(Icons.location_on, color: Colors.red, size: 20),
         ...List.generate(

@@ -13,10 +13,12 @@ import 'package:edt/pages/drawer_screens/history/history.dart';
 import 'package:edt/pages/drawer_screens/about_us/about_us.dart';
 import 'package:edt/pages/drawer_screens/settings/settings.dart';
 import 'package:edt/pages/boarding/provider/role_provider.dart';
+import 'package:edt/pages/expense_tracking/provider/expense_provider.dart';
 import 'package:edt/widgets/back_button.dart';
 import 'package:edt/widgets/container.dart';
 import 'package:edt/widgets/text_field.dart';
 import 'package:edt/pages/authentication/signup/services/signup_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -113,11 +115,11 @@ Drawer getDrawer(BuildContext context) {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => AddressScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon3.svg', 'History', () {
-          Navigator.pop(context);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => HistoryScreen()));
-        }),
+        // _buildDrawerItem('assets/icons/dicon3.svg', 'History', () {
+        //   Navigator.pop(context);
+        //   Navigator.push(context,
+        //       MaterialPageRoute(builder: (context) => HistoryScreen()));
+        // }),
         _buildDrawerItem('assets/icons/dicon4.svg', 'Complain', () {
           Navigator.pop(context);
           Navigator.push(context,
@@ -134,10 +136,10 @@ Drawer getDrawer(BuildContext context) {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => SettingsScreen()));
         }),
-        _buildDrawerItem('assets/icons/dicon8.svg', 'Emergency', () {
-          Navigator.pop(context);
-          emergencySheet(context);
-        }),
+        // _buildDrawerItem('assets/icons/dicon8.svg', 'Emergency', () {
+        //   Navigator.pop(context);
+        //   emergencySheet(context);
+        // }),
         _buildDrawerItem('assets/icons/dicon9.svg', 'Help and Support', () {
           Navigator.pop(context);
           Navigator.push(context,
@@ -165,15 +167,24 @@ Future<bool> _showLogoutConfirmation(BuildContext context) async {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text("Cancel",style: TextStyle(
-                color: Colors.black
-              ),),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text("Logout",style: TextStyle(
-                color: Colors.red
-              ),),
+              onPressed: () async {
+                Navigator.pop(context, true);
+                Provider.of<PaymentProvider>(context, listen: false).reset();
+                final userRole =
+                    Provider.of<UserRoleProvider>(context, listen: false);
+                userRole.resetRole();
+                await removeDeviceTokenOnLogout(userRole.role);
+              },
+              child: Text(
+                "Logout",
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -196,15 +207,39 @@ Future<void> _logout(BuildContext context) async {
       await SignupService().signOut();
     }
     Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => DriverPassenger()),
-      (route)=>false
-    );
+        context,
+        MaterialPageRoute(builder: (context) => DriverPassenger()),
+        (route) => false);
     EasyLoading.showSuccess('Logged Out Successfully');
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Error: ${e.toString()}")),
     );
+  }
+}
+
+Future<void> removeDeviceTokenOnLogout(String userRole) async {
+  try {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken == null) return;
+
+    final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
+
+    final userDocRef =
+        FirebaseFirestore.instance.collection(collectionName).doc(userId);
+
+    await userDocRef.update({
+      'tokens': FieldValue.arrayRemove([fcmToken])
+    });
+
+    print('FCM Token removed successfully on logout for $userRole: $fcmToken');
+
+    await FirebaseMessaging.instance.deleteToken();
+  } catch (e) {
+    print('Error removing device token: $e');
   }
 }
 

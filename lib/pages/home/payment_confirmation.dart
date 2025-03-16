@@ -13,12 +13,13 @@ class PaymentConfirmation extends StatefulWidget {
   String? vehicleName;
   String? driverUid;
   String? passengerUid;
+  String? rideId;
   PaymentConfirmation(
       {super.key,
       required this.price,
       required this.vehicleName,
       required this.driverUid,
-      required this.passengerUid});
+      required this.passengerUid,required this.rideId});
 
   @override
   State<PaymentConfirmation> createState() => _PaymentConfirmationState();
@@ -226,6 +227,7 @@ class _PaymentConfirmationState extends State<PaymentConfirmation> {
                       currency: 'USD',
                       passengerId: widget.passengerUid ?? '',
                       driverId: widget.driverUid ?? '',
+                      rideId: widget.rideId??''
                     );
 
                     Navigator.of(context).pop();

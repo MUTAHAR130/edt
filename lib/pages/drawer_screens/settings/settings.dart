@@ -87,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
       'Privacy Policy',
       'Contact Us',
       'Delete Account',
-      'Logout'
+      // 'Logout'
     ];
     return ListView.builder(
       shrinkWrap: true,
@@ -123,12 +123,13 @@ class SettingsScreen extends StatelessWidget {
               } else if (title[index] == 'Contact Us') {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => ContactUsScreen()));
-              } else if (title[index] == 'Logout') {
-                bool confirmLogout = await _showLogoutConfirmation(context);
-                if (confirmLogout) {
-                  await _logout(context);
-                }
               }
+              // else if (title[index] == 'Logout') {
+              //   bool confirmLogout = await _showLogoutConfirmation(context);
+              //   if (confirmLogout) {
+              //     await _logout(context);
+              //   }
+              // }
             },
             child: Container(
               decoration: BoxDecoration(

@@ -21,4 +21,11 @@ class UserRoleProvider with ChangeNotifier {
     _role = prefs.getString('userRole') ?? '';
     notifyListeners();
   }
+
+  Future<void> resetRole() async {
+    _role = '';
+    notifyListeners();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('userRole');
+  }
 }
