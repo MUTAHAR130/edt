@@ -20,7 +20,7 @@
 </queries>
 
     <application
-        android:label="edt"
+        android:label="EDT"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data
