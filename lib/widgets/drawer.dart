@@ -192,6 +192,53 @@ Future<bool> _showLogoutConfirmation(BuildContext context) async {
       false;
 }
 
+// 3️⃣ Add this function below your _logout method
+
+Future<void> _deleteAccount(BuildContext context) async {
+  try {
+    EasyLoading.show(status: 'Deleting account...');
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final uid = user.uid;
+
+    // Get role
+    final roleProvider = Provider.of<UserRoleProvider>(context, listen: false);
+    String collectionName =
+        roleProvider.role == 'Driver' ? 'drivers' : 'passengers';
+
+    // Remove FCM token from Firestore
+    await removeDeviceTokenOnLogout(roleProvider.role);
+
+    // Delete user data from Firestore
+    await FirebaseFirestore.instance
+        .collection(collectionName)
+        .doc(uid)
+        .delete();
+
+    // Delete Firebase Auth account
+    await user.delete();
+
+    // Reset providers
+    Provider.of<PaymentProvider>(context, listen: false).reset();
+    roleProvider.resetRole();
+
+    EasyLoading.showSuccess('Account deleted');
+
+    // Navigate to login screen
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+      (route) => false,
+    );
+  } catch (e) {
+    EasyLoading.dismiss();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: ${e.toString()}")),
+    );
+  }
+}
+
 Future<void> _logout(BuildContext context) async {
   try {
     EasyLoading.show(status: 'Logging out...');
