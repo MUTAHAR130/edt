@@ -206,7 +206,7 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
             ),
             SizedBox(height: 20),
             CustomTextFormField(
-              hintText: 'Write phone with country code (+92)',
+              hintText: 'Write phone with country code',
               keyboardType: TextInputType.phone,
               controller: phone,
             ),

@@ -32,7 +32,9 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController gender = TextEditingController();
   TextEditingController phone = TextEditingController();
   String completePhoneNumber = '';
+
   bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     var userPro = Provider.of<UserRoleProvider>(context);
@@ -76,7 +78,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 20,
                       ),
                       CustomTextFormField(
-                        hintText: 'Write phone with country code (+92)',
+                        hintText: 'Write phone with country code',
                         keyboardType: TextInputType.phone,
                         controller: phone,
                       ),

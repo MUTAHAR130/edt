@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:751857329071:android:a1ef0b2c7f346096a9055a",
+        "mobilesdk_app_id": "1:751857329071:android:dcdcab7196a08478a9055a",
         "android_client_info": {
-          "package_name": "com.example.edt"
+          "package_name": "com.bitknit.edt"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "751857329071-mm6ha44q0lor9c9dagslmundc2psh4uu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB7uoRRQxivWgZtF8O8wASnIXBg1jGvTV8"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "751857329071-mm6ha44q0lor9c9dagslmundc2psh4uu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "751857329071-f3t5fuin66vjufgo6qkm1cdumb004o5r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.edt"
+              }
+            }
+          ]
         }
       }
     }
