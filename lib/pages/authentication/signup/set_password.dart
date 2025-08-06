@@ -30,122 +30,130 @@ class _SetPasswordState extends State<SetPassword> {
     var userPro = Provider.of<UserRoleProvider>(context);
     return Scaffold(
       appBar: getBackButton(context),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 30),
-                      Text(
-                        'Set Password',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          color: Color(0xff2a2a2a),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SizedBox(height: 13),
-                      Text(
-                        'Set your password',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          color: Color(0xffa0a0a0),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      SizedBox(height: 40),
-                      PasswordField(
-                        hintText: 'Enter Password',
-                        controller: password,
-                      ),
-                      SizedBox(height: 20),
-                      PasswordField(
-                        hintText: 'Confirm Password',
-                        controller: confirmPassword,
-                      ),
-                      Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20.0),
-                        child: GestureDetector(
-                          onTap: () async {
-                            if (_isLoading) return;
-                            
-                            if (password.text.isEmpty ||
-                                confirmPassword.text.isEmpty) {
-                              EasyLoading.showError("Please fill in both password fields");
-                              return;
-                            }
-                            if (password.text != confirmPassword.text) {
-                              EasyLoading.showError("Passwords do not match");
-                              return;
-                            }
-                            setState(() {
-                              _isLoading = true;
-                            });
-                            EasyLoading.show(status: "Registering...");
-                            try {
-                              if (widget.role == 'Passenger') {
-                                await SignupService().signupUser(
-                                  username: signupPro.name,
-                                  email: signupPro.email,
-                                  phone: signupPro.phone,
-                                  gender: signupPro.gender,
-                                  role: userPro.role,
-                                  password: password.text,
-                                  context: context,
-                                );
-                              } else if (widget.role == 'Driver') {
-                                await SignupService().signupDriver(
-                                  driverImage: signupPro.driverImage,
-                                  fullname: signupPro.driverFullname,
-                                  phone: signupPro.driverPhone,
-                                  email: signupPro.driverEmail,
-                                  street: signupPro.driverStreet,
-                                  city: signupPro.driverCity,
-                                  district: signupPro.driverDistrict,
-                                  vehicleName:signupPro.driverVehicleName,
-                                  vehicleType: signupPro.driverVehicleType,
-                                  vehicleNumber: signupPro.driverVehicleNumber,
-                                  vehicleColor: signupPro.driverVehicleColor,
-                                  idProof: signupPro.driverIdProof,
-                                  drivingLicense: signupPro.driverDrivingLicense,
-                                  vehicleRegistrationCertificate: signupPro.driverVehicleRegistrationCertificate,
-                                  vehiclePicture: signupPro.driverVehiclePicture,
-                                  password: password.text,
-                                  role: userPro.role,
-                                  context: context,
-                                );
-                              } else {
-                                EasyLoading.showError("No Role Specified");
-                              }
-                            } catch (e) {
-                              EasyLoading.showError(e.toString());
-                            } finally {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              EasyLoading.dismiss();
-                            }
-                          },
-                          child: getContainer(
-                            context,'Register',
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 30),
+                        Text(
+                          'Set Password',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Color(0xff2a2a2a),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      )
-                    ],
+                        SizedBox(height: 13),
+                        Text(
+                          'Set your password',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Color(0xffa0a0a0),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(height: 40),
+                        PasswordField(
+                          hintText: 'Enter Password',
+                          controller: password,
+                        ),
+                        SizedBox(height: 20),
+                        PasswordField(
+                          hintText: 'Confirm Password',
+                          controller: confirmPassword,
+                        ),
+                        Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20.0),
+                          child: GestureDetector(
+                            onTap: () async {
+                              if (_isLoading) return;
+
+                              if (password.text.isEmpty ||
+                                  confirmPassword.text.isEmpty) {
+                                EasyLoading.showError(
+                                    "Please fill in both password fields");
+                                return;
+                              }
+                              if (password.text != confirmPassword.text) {
+                                EasyLoading.showError("Passwords do not match");
+                                return;
+                              }
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              EasyLoading.show(status: "Registering...");
+                              try {
+                                if (widget.role == 'Passenger') {
+                                  await SignupService().signupUser(
+                                    username: signupPro.name,
+                                    email: signupPro.email,
+                                    phone: signupPro.phone,
+                                    gender: signupPro.gender,
+                                    role: userPro.role,
+                                    password: password.text,
+                                    context: context,
+                                  );
+                                } else if (widget.role == 'Driver') {
+                                  await SignupService().signupDriver(
+                                    driverImage: signupPro.driverImage,
+                                    fullname: signupPro.driverFullname,
+                                    phone: signupPro.driverPhone,
+                                    email: signupPro.driverEmail,
+                                    street: signupPro.driverStreet,
+                                    city: signupPro.driverCity,
+                                    district: signupPro.driverDistrict,
+                                    vehicleName: signupPro.driverVehicleName,
+                                    vehicleType: signupPro.driverVehicleType,
+                                    vehicleNumber:
+                                        signupPro.driverVehicleNumber,
+                                    vehicleColor: signupPro.driverVehicleColor,
+                                    idProof: signupPro.driverIdProof,
+                                    drivingLicense:
+                                        signupPro.driverDrivingLicense,
+                                    vehicleRegistrationCertificate: signupPro
+                                        .driverVehicleRegistrationCertificate,
+                                    vehiclePicture:
+                                        signupPro.driverVehiclePicture,
+                                    password: password.text,
+                                    role: userPro.role,
+                                    context: context,
+                                  );
+                                } else {
+                                  EasyLoading.showError("No Role Specified");
+                                }
+                              } catch (e) {
+                                EasyLoading.showError(e.toString());
+                              } finally {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                                EasyLoading.dismiss();
+                              }
+                            },
+                            child: getContainer(
+                              context,
+                              'Register',
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

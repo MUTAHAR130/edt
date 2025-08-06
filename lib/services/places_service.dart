@@ -4,31 +4,35 @@ import 'dart:convert';
 
 class PlacesService {
   static const String baseUrl = 'https://maps.googleapis.com/maps/api/place';
-  
-  // static String get _apiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';  
-  final String _apiKey='AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo';
+
+  // static String get _apiKey => dotenv.env['GOOGLE_MAPS_API_KEY'] ?? '';
+  final String _apiKey = 'AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs';
   //removed static here
   Future<List<PlaceSearchResult>> searchPlaces(String query) async {
     if (query.isEmpty) return [];
 
-    final url = '$baseUrl/autocomplete/json?input=$query&types=address&key=$_apiKey';
+    final url =
+        '$baseUrl/autocomplete/json?input=$query&types=address&key=$_apiKey';
     log(url);
-    
+
     try {
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         log('RESPONSE IS 2000000000');
         log(response.body);
         final data = json.decode(response.body);
         final predictions = data['predictions'] as List;
-        
-        return predictions.map((place) => PlaceSearchResult(
-          placeId: place['place_id'],
-          description: place['description'],
-          mainText: place['structured_formatting']['main_text'],
-          secondaryText: place['structured_formatting']['secondary_text'],
-        )).toList();
+
+        return predictions
+            .map((place) => PlaceSearchResult(
+                  placeId: place['place_id'],
+                  description: place['description'],
+                  mainText: place['structured_formatting']['main_text'],
+                  secondaryText: place['structured_formatting']
+                      ['secondary_text'],
+                ))
+            .toList();
       }
       return [];
     } catch (e) {
@@ -36,17 +40,18 @@ class PlacesService {
       return [];
     }
   }
-//removed static here 
+
+//removed static here
   Future<PlaceDetails?> getPlaceDetails(String placeId) async {
     final url = '$baseUrl/details/json?place_id=$placeId&key=$_apiKey';
-    
+
     try {
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final result = data['result'];
-        
+
         return PlaceDetails(
           placeId: placeId,
           address: result['formatted_address'],

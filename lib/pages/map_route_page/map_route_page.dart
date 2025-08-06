@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:developer' as dev;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:edt/pages/bottom_bar/bottom_bar.dart';
+import 'package:edt/pages/home/home.dart';
+import 'package:edt/pages/home/payment_confirmation.dart';
 import 'package:edt/pages/home/provider/location_provider.dart';
 import 'package:edt/pages/home/widgets/cancel_ride.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,10 +22,13 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _mapController;
+
   StreamSubscription<DocumentSnapshot>? _rideSubscription;
   StreamSubscription<DocumentSnapshot>? _driverSubscription;
+
   bool driverFound = false;
   LatLng? driverLocation;
+
   final ValueNotifier<Set<Marker>> _markersNotifier =
       ValueNotifier<Set<Marker>>({});
   final ValueNotifier<Set<Polyline>> _polylinesNotifier =
@@ -48,11 +55,16 @@ class _MapScreenState extends State<MapScreen> {
     final user = FirebaseAuth.instance.currentUser;
     String uid = user?.uid ?? '';
 
-    DocumentSnapshot<Map<String, dynamic>> snapshot =
-        await FirebaseFirestore.instance.collection('passengers').doc(uid).get();
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+        .instance
+        .collection('passengers')
+        .doc(uid)
+        .get();
+
     String passengerName = snapshot.data()?['username'] ?? 'Anonymous';
     String passengerPhone = snapshot.data()?['phone'] ?? '';
     String passengerUid = snapshot.data()?['uid'] ?? '';
+
     var locPro = Provider.of<LocationProvider>(context, listen: false);
 
     await FirebaseFirestore.instance.collection('rides').doc(uid).set({
@@ -74,24 +86,42 @@ class _MapScreenState extends State<MapScreen> {
 
   void _listenToRideUpdates() {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return;
+
     _rideSubscription = FirebaseFirestore.instance
         .collection('rides')
         .doc(user.uid)
         .snapshots()
         .listen((snapshot) {
+      dev.log(snapshot.data().toString());
+
       if (!snapshot.exists) return;
+
       final data = snapshot.data() as Map<String, dynamic>;
+
       bool found = data['driverFound'] ?? false;
+
       setState(() {
         driverFound = found;
       });
+
       String driverId = data['driverId'] ?? '';
+
       if (found && driverId.isNotEmpty) {
         _listenToDriverLocation(driverId);
       }
+
       bool arrived = data['arrived'] ?? false;
       if (arrived) {
+        if (data['status'] == 'completed') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => BottomBar()),
+          );
+          return;
+        }
+
         _updateArrivalRoute();
       }
     });
@@ -99,14 +129,18 @@ class _MapScreenState extends State<MapScreen> {
 
   void _listenToDriverLocation(String driverId) {
     _driverSubscription?.cancel();
+
     _driverSubscription = FirebaseFirestore.instance
         .collection('drivers')
         .doc(driverId)
         .snapshots()
         .listen((snapshot) {
+      dev.log(snapshot.data().toString());
       if (!snapshot.exists) return;
+
       double? lat = snapshot.data()?['latitude'];
       double? lng = snapshot.data()?['longitude'];
+
       if (lat != null && lng != null) {
         driverLocation = LatLng(lat, lng);
         _updateDriverMarkersAndRoute();
@@ -116,8 +150,8 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _updateDriverMarkersAndRoute() async {
     var locPro = Provider.of<LocationProvider>(context, listen: false);
-    LatLng passengerLoc = LatLng(
-        locPro.currentLatitude, locPro.currentLongitude);
+    LatLng passengerLoc =
+        LatLng(locPro.currentLatitude, locPro.currentLongitude);
 
     Set<Marker> markers = {
       Marker(
@@ -126,6 +160,7 @@ class _MapScreenState extends State<MapScreen> {
         infoWindow: InfoWindow(title: "Pickup Location"),
       ),
     };
+
     if (driverLocation != null) {
       markers.add(
         Marker(
@@ -136,10 +171,11 @@ class _MapScreenState extends State<MapScreen> {
         ),
       );
     }
+
     _markersNotifier.value = markers;
 
     if (driverLocation != null) {
-      String apiKey = "AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo";
+      String apiKey = "AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs";
       final String url =
           "https://maps.googleapis.com/maps/api/directions/json?origin=${driverLocation!.latitude},${driverLocation!.longitude}"
           "&destination=${passengerLoc.latitude},${passengerLoc.longitude}"
@@ -152,6 +188,7 @@ class _MapScreenState extends State<MapScreen> {
           String encodedPoints =
               data['routes'][0]['overview_polyline']['points'];
           List<LatLng> decodedPoints = _decodePolyline(encodedPoints);
+
           _polylinesNotifier.value = {
             Polyline(
               polylineId: PolylineId("driver_route"),
@@ -172,6 +209,7 @@ class _MapScreenState extends State<MapScreen> {
                 max(passengerLoc.longitude, driverLocation!.longitude),
               ),
             );
+
             _mapController!.animateCamera(
               CameraUpdate.newLatLngBounds(bounds, 100),
             );
@@ -187,33 +225,44 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _updateArrivalRoute() async {
     final user = FirebaseAuth.instance.currentUser;
+
     if (user == null) return;
+
     DocumentSnapshot rideSnapshot = await FirebaseFirestore.instance
         .collection('rides')
         .doc(user.uid)
         .get();
+
     if (!rideSnapshot.exists) return;
+
     final rideData = rideSnapshot.data() as Map<String, dynamic>;
+
     double originLat = driverLocation?.latitude ?? 0;
     double originLng = driverLocation?.longitude ?? 0;
+
     double destinationLat =
         double.tryParse(rideData['destinationLatitude'].toString()) ?? 0;
+
     double destinationLng =
         double.tryParse(rideData['destinationLongitude'].toString()) ?? 0;
 
-    String apiKey = "AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo";
+    String apiKey = "AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs";
+
     final String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=$originLat,$originLng"
         "&destination=$destinationLat,$destinationLng"
         "&mode=driving"
         "&key=$apiKey";
+
     try {
       final response = await http.get(Uri.parse(url));
       final data = json.decode(response.body);
+
       if (data['status'] == 'OK') {
-        String encodedPoints =
-            data['routes'][0]['overview_polyline']['points'];
+        String encodedPoints = data['routes'][0]['overview_polyline']['points'];
+
         List<LatLng> decodedPoints = _decodePolyline(encodedPoints);
+
         _polylinesNotifier.value = {
           Polyline(
             polylineId: PolylineId("arrival_route"),
@@ -229,6 +278,7 @@ class _MapScreenState extends State<MapScreen> {
           infoWindow: InfoWindow(title: "Destination"),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         );
+
         Set<Marker> updatedMarkers = _markersNotifier.value;
         updatedMarkers.removeWhere((m) => m.markerId.value == "destination");
         updatedMarkers.add(destinationMarker);
@@ -245,8 +295,8 @@ class _MapScreenState extends State<MapScreen> {
               max(originLng, destinationLng),
             ),
           );
-          _mapController!.animateCamera(
-              CameraUpdate.newLatLngBounds(bounds, 100));
+          _mapController!
+              .animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
         }
       } else {
         print("Error from Directions API (arrival): ${data['status']}");

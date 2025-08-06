@@ -10,16 +10,17 @@ import 'package:url_launcher/url_launcher.dart';
 
 class PaymentConfirmation extends StatefulWidget {
   String? price;
-  String? vehicleName;
+  String? driverName;
   String? driverUid;
   String? passengerUid;
   String? rideId;
   PaymentConfirmation(
       {super.key,
       required this.price,
-      required this.vehicleName,
+      required this.driverName,
       required this.driverUid,
-      required this.passengerUid,required this.rideId});
+      required this.passengerUid,
+      required this.rideId});
 
   @override
   State<PaymentConfirmation> createState() => _PaymentConfirmationState();
@@ -27,6 +28,7 @@ class PaymentConfirmation extends StatefulWidget {
 
 class _PaymentConfirmationState extends State<PaymentConfirmation> {
   String selectedOption = 'Payonner';
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> updateUserExpenses(
@@ -43,10 +45,13 @@ class _PaymentConfirmationState extends State<PaymentConfirmation> {
 
       DocumentReference driverDoc =
           _firestore.collection('drivers').doc(driverId);
+
       DocumentSnapshot driverSnapshot = await driverDoc.get();
+
       if (driverSnapshot.exists) {
         double currentEarnings = driverSnapshot['totalEarnings'] ?? 0.0;
         double updatedEarnings = currentEarnings + amount;
+
         await driverDoc.update({'totalEarnings': updatedEarnings});
       }
     } catch (e) {
@@ -112,7 +117,7 @@ class _PaymentConfirmationState extends State<PaymentConfirmation> {
               SizedBox(
                 height: 30,
               ),
-              getRideContainer(context, widget.vehicleName ?? ''),
+              getRideContainer(context, widget.driverName ?? ''),
               SizedBox(
                 height: 17,
               ),
@@ -223,12 +228,11 @@ class _PaymentConfirmationState extends State<PaymentConfirmation> {
                     final payPalService = PayPalService();
                     PaymentResult paymentResult =
                         await payPalService.createPayment(
-                      amount: widget.price ?? '0.00',
-                      currency: 'USD',
-                      passengerId: widget.passengerUid ?? '',
-                      driverId: widget.driverUid ?? '',
-                      rideId: widget.rideId??''
-                    );
+                            amount: widget.price ?? '0.00',
+                            currency: 'USD',
+                            passengerId: widget.passengerUid ?? '',
+                            driverId: widget.driverUid ?? '',
+                            rideId: widget.rideId ?? '');
 
                     Navigator.of(context).pop();
 
@@ -241,11 +245,13 @@ class _PaymentConfirmationState extends State<PaymentConfirmation> {
                             Uri.parse(paymentResult.approvalUrl!),
                             mode: LaunchMode.externalApplication,
                           );
-                          // showPaymentSuccess(context, widget.price ?? '0.00');
-                          // double amount =
-                          //     double.tryParse(widget.price ?? '0.00') ?? 0.0;
-                          // await updateUserExpenses(widget.passengerUid ?? '',
-                          //     widget.driverUid ?? '', amount);
+
+                          showPaymentSuccess(widget.price ?? '0.00');
+
+                          double amount =
+                              double.tryParse(widget.price ?? '0.00') ?? 0.0;
+                          await updateUserExpenses(widget.passengerUid ?? '',
+                              widget.driverUid ?? '', amount);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

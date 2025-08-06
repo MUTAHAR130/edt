@@ -1,4 +1,4 @@
-// 
+//
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
@@ -11,21 +11,21 @@ import 'package:http/http.dart' as http;
 class LocationProvider with ChangeNotifier {
   LatLng? _currentLocation;
   double _currentLatitude = 0;
-  double _currentLongitude = 0; 
+  double _currentLongitude = 0;
   String? _currentAddress;
 
   LatLng? _selectedLocation;
   String? _selectedAddress;
   double? _selectedLatitude;
   double? _selectedLongitude;
-  String address=''; 
+  String address = '';
   List<LatLng> _polylineCoordinates = [];
 
   LatLng? get currentLocation => _currentLocation;
   LatLng? get selectedLocation => _selectedLocation;
   String? get currentAddress => _currentAddress;
   double get currentLatitude => _currentLatitude;
-  double get currentLongitude => _currentLongitude; 
+  double get currentLongitude => _currentLongitude;
   String? get selectedAddress => _selectedAddress;
   double? get selectedLatitude => _selectedLatitude;
   double? get selectedLongitude => _selectedLongitude;
@@ -48,27 +48,27 @@ class LocationProvider with ChangeNotifier {
 
   set currentAddress(String? value) {
     _currentAddress = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   set currentLatitude(double value) {
     _currentLatitude = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   set currentLongitude(double value) {
     _currentLongitude = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
-  set currentLocation(LatLng? value) { 
+  set currentLocation(LatLng? value) {
     _currentLocation = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
-  set selectedLocation(LatLng? value) { 
+  set selectedLocation(LatLng? value) {
     _selectedLocation = value;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   Future<void> getCurrentLocation() async {
@@ -91,7 +91,8 @@ class LocationProvider with ChangeNotifier {
       _currentLocation = LatLng(position.latitude, position.longitude);
       _currentLatitude = position.latitude;
       _currentLongitude = position.longitude;
-      _currentAddress = await getAddressFromCoordinates(position.latitude, position.longitude);
+      _currentAddress = await getAddressFromCoordinates(
+          position.latitude, position.longitude);
       log('ADDRESSSSSS $currentAddress');
 
       notifyListeners();
@@ -105,11 +106,11 @@ class LocationProvider with ChangeNotifier {
     _selectedLocation = location;
     _selectedAddress = address;
     _selectedLatitude = location.latitude;
-    _selectedLongitude = location.longitude; 
+    _selectedLongitude = location.longitude;
     notifyListeners();
     if (_currentLocation != null) {
-    fetchRoutePolyline();
-  }
+      fetchRoutePolyline();
+    }
     // fetchRoutePolyline();
   }
 
@@ -122,16 +123,17 @@ class LocationProvider with ChangeNotifier {
     notifyListeners();
     return address;
   }
+
   Future<void> fetchRoutePolyline() async {
     if (_currentLocation == null || _selectedLocation == null) return;
 
-    String apiKey = "AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo";
+    String apiKey = "AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs";
     String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${_currentLocation!.latitude},${_currentLocation!.longitude}&destination=${_selectedLocation!.latitude},${_selectedLocation!.longitude}&mode=driving&key=$apiKey";
-        log(url);
+    log(url);
 
     final response = await http.get(Uri.parse(url));
-    final data=jsonDecode(response.body);
+    final data = jsonDecode(response.body);
     log("Google Maps API Response: $data");
 
     if (data['status'] == 'OK') {
@@ -142,6 +144,7 @@ class LocationProvider with ChangeNotifier {
       log("Failed to fetch route: ${data['status']}");
     }
   }
+
   List<LatLng> _decodePolyline(String encoded) {
     List<LatLng> points = [];
     int index = 0, len = encoded.length;

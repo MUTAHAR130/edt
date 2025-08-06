@@ -29,13 +29,13 @@ class _BottomBarState extends State<BottomBar> {
         Provider.of<UserRoleProvider>(context, listen: false).role;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    Provider.of<PaymentProvider>(context, listen: false)
-        .fetchPaymentAndExpenseData(userRole);
-  });
+      Provider.of<PaymentProvider>(context, listen: false)
+          .fetchPaymentAndExpenseData(userRole);
+    });
     var userPro = Provider.of<UserRoleProvider>(context, listen: false);
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //   _storeDeviceToken(userPro.role);
-  // });
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _storeDeviceToken(userPro.role);
+    // });
     if (userPro.role == 'Driver') {
       Provider.of<UserProfileProvider>(context, listen: false)
           .loadUserProfile('drivers');
@@ -46,55 +46,56 @@ class _BottomBarState extends State<BottomBar> {
   }
 
   Future<void> _storeDeviceToken(String userRole) async {
-  try {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
-    
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    if (fcmToken == null) return;
-    
-    final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
-    
-    final userDocRef = FirebaseFirestore.instance.collection(collectionName).doc(userId);
-    
-    await userDocRef.update({
-      'tokens': FieldValue.arrayUnion([fcmToken])
-    }).catchError((error) {
-      userDocRef.update({
-        'tokens': [fcmToken]
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null) return;
+
+      final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
+
+      final userDocRef =
+          FirebaseFirestore.instance.collection(collectionName).doc(userId);
+
+      await userDocRef.update({
+        'tokens': FieldValue.arrayUnion([fcmToken])
+      }).catchError((error) {
+        userDocRef.update({
+          'tokens': [fcmToken]
+        });
       });
-    });
-    
-    print('FCM Token stored successfully for $userRole: $fcmToken');
-    
-    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-      _updateDeviceToken(userRole, userId, fcmToken, newToken);
-    });
-    
-  } catch (e) {
-    print('Error storing device token: $e');
-  }
-}
 
+      print('FCM Token stored successfully for $userRole: $fcmToken');
 
-Future<void> _updateDeviceToken(String userRole, String userId, String oldToken, String newToken) async {
-  try {
-    final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
-    final userDocRef = FirebaseFirestore.instance.collection(collectionName).doc(userId);
-    
-    await userDocRef.update({
-      'tokens': FieldValue.arrayRemove([oldToken])
-    });
-    
-    await userDocRef.update({
-      'tokens': FieldValue.arrayUnion([newToken])
-    });
-    
-    print('FCM Token updated successfully for $userRole: $newToken');
-  } catch (e) {
-    print('Error updating device token: $e');
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+        _updateDeviceToken(userRole, userId, fcmToken, newToken);
+      });
+    } catch (e) {
+      print('Error storing device token: $e');
+    }
   }
-}
+
+  Future<void> _updateDeviceToken(
+      String userRole, String userId, String oldToken, String newToken) async {
+    try {
+      final collectionName = userRole == 'Driver' ? 'drivers' : 'passengers';
+      final userDocRef =
+          FirebaseFirestore.instance.collection(collectionName).doc(userId);
+
+      await userDocRef.update({
+        'tokens': FieldValue.arrayRemove([oldToken])
+      });
+
+      await userDocRef.update({
+        'tokens': FieldValue.arrayUnion([newToken])
+      });
+
+      print('FCM Token updated successfully for $userRole: $newToken');
+    } catch (e) {
+      print('Error updating device token: $e');
+    }
+  }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -124,50 +125,52 @@ Future<void> _updateDeviceToken(String userRole, String userId, String oldToken,
           child: Scaffold(
             key: _scaffoldKey,
             drawer: getDrawer(context),
-            body: Stack(
-              children: [
-                Positioned.fill(
-                  child: _screens[model.selectedIndex],
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          offset: Offset(0, -4),
-                          spreadRadius: 0.1,
-                          blurRadius: 1,
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _screens[model.selectedIndex],
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            offset: Offset(0, -4),
+                            spreadRadius: 0.1,
+                            blurRadius: 1,
+                          ),
+                        ],
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(40),
+                          topRight: Radius.circular(40),
                         ),
-                      ],
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          _buildBottomNavItem(context, model,
+                              'assets/icons/bottomicon1.svg', 'Home', 0),
+                          _buildBottomNavItem(
+                              context,
+                              model,
+                              'assets/icons/bottomicon2.svg',
+                              userPro.role == 'Passenger'
+                                  ? 'Expense Tracking'
+                                  : 'Earning',
+                              1),
+                          _buildBottomNavItem(context, model,
+                              'assets/icons/bottomicon3.svg', 'Profile', 2),
+                        ],
                       ),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: <Widget>[
-                        _buildBottomNavItem(context, model,
-                            'assets/icons/bottomicon1.svg', 'Home', 0),
-                        _buildBottomNavItem(
-                            context,
-                            model,
-                            'assets/icons/bottomicon2.svg',
-                            userPro.role == 'Passenger'
-                                ? 'Expense Tracking'
-                                : 'Earning',
-                            1),
-                        _buildBottomNavItem(context, model,
-                            'assets/icons/bottomicon3.svg', 'Profile', 2),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

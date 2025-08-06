@@ -50,7 +50,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return {};
     rideId = user.uid;
-    
+
     DocumentSnapshot rideSnapshot = await FirebaseFirestore.instance
         .collection('rides')
         .doc(user.uid)
@@ -339,9 +339,9 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                         MaterialPageRoute(
                           builder: (context) => PaymentConfirmation(
                             price: price.toStringAsFixed(2),
-                            vehicleName: vehicleName,
-                            driverUid:driverUid,
-                            passengerUid:passengerUid,
+                            driverName: driverName,
+                            driverUid: driverUid,
+                            passengerUid: passengerUid,
                             rideId: rideId,
                           ),
                         ),
@@ -360,7 +360,7 @@ class _CancelRideContainerState extends State<CancelRideContainer> {
                           builder: (context) => CancelReason(
                             context: context,
                             rideId: rideId,
-                            amount:price,
+                            amount: price,
                             vehicleName: vehicleName,
                           ),
                         ),

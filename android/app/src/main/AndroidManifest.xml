@@ -3,7 +3,6 @@
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <queries>
     <intent>
         <action android:name="android.intent.action.VIEW" />
@@ -22,10 +21,11 @@
     <application
         android:label="EDT"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo"/>
+        android:value="AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

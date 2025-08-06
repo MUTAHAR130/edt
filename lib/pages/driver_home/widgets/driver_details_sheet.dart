@@ -55,7 +55,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
       final userRoleProvider =
           Provider.of<UserRoleProvider>(context, listen: false);
+
       final String role = userRoleProvider.role;
+
       final driverDoc = await FirebaseFirestore.instance
           .collection('drivers')
           .doc(user.uid)
@@ -70,7 +72,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
         final snapshot = await transaction.get(driverRef);
 
         if (snapshot.exists) {
+
           final data = snapshot.data();
+
           if (data != null && data.containsKey('totalDeliveries')) {
             int currentTotal = data['totalDeliveries'] ?? 0;
             transaction
@@ -78,6 +82,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           } else {
             transaction.update(driverRef, {'totalDeliveries': 1});
           }
+          
         }
       });
 
@@ -188,7 +193,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
   Future<void> fetchAndDisplayRoute() async {
     if (_currentDriverLocation == null || _pickupLocation == null) return;
-    String apiKey = "AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo";
+    String apiKey = "AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs";
     final String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${_currentDriverLocation!.latitude},${_currentDriverLocation!.longitude}"
         "&destination=${_pickupLocation!.latitude},${_pickupLocation!.longitude}"
@@ -245,7 +250,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     }
     await Future.delayed(Duration(milliseconds: 300));
 
-    String apiKey = "AIzaSyBzDnudfbtQegKHsECZ2ND-NQofYECKPzo";
+    String apiKey = "AIzaSyA5FXRZK0k8h8FeV8UPB1D7mUBfPzulFcs";
     final String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${_currentDriverLocation!.latitude},${_currentDriverLocation!.longitude}"
         "&destination=${_destinationLocation!.latitude},${_destinationLocation!.longitude}"
@@ -420,65 +425,65 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     }
   }
 
-void _setupRideListener() {
-  final String driverUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  if (driverUid.isEmpty) return;
+  void _setupRideListener() {
+    final String driverUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (driverUid.isEmpty) return;
 
-  // Listen for ride status changes
-  FirebaseFirestore.instance
-      .collection('rides')
-      .doc(widget.rideId)
-      .snapshots()
-      .listen((snapshot) {
-    if (!snapshot.exists) return;
+    // Listen for ride status changes
+    FirebaseFirestore.instance
+        .collection('rides')
+        .doc(widget.rideId)
+        .snapshots()
+        .listen((snapshot) {
+      if (!snapshot.exists) return;
 
-    final data = snapshot.data() as Map<String, dynamic>;
-    final bool arrived = data['arrived'] ?? false;
-    final bool completed = data['status'] == 'completed';
-    final double price = data['price'] ?? 0.0;
+      final data = snapshot.data() as Map<String, dynamic>;
+      final bool arrived = data['arrived'] ?? false;
+      final bool completed = data['status'] == 'completed';
+      final double price = data['price'] ?? 0.0;
 
-    // Show local notification when status changes
-    if (arrived && _lastArrivedStatus == false) {
-      NotificationService.showLocalNotification(
-        'You have arrived at pickup location',
-        'Your passenger is waiting for you.',
-      );
-      _lastArrivedStatus = arrived;
-    }
+      // Show local notification when status changes
+      if (arrived && _lastArrivedStatus == false) {
+        NotificationService.showLocalNotification(
+          'You have arrived at pickup location',
+          'Your passenger is waiting for you.',
+        );
+        _lastArrivedStatus = arrived;
+      }
 
-    if (completed && _lastCompletedStatus == false) {
-      NotificationService.showLocalNotification(
-        'Ride Completed',
-        'You have earned \$${price.toStringAsFixed(2)} from this ride.',
-      );
-      _lastCompletedStatus = completed;
-    }
-  });
+      if (completed && _lastCompletedStatus == false) {
+        NotificationService.showLocalNotification(
+          'Ride Completed',
+          'You have earned \$${price.toStringAsFixed(2)} from this ride.',
+        );
+        _lastCompletedStatus = completed;
+      }
+    });
 
-  // Listen for payments with timestamp filter
-  FirebaseFirestore.instance
-    .collection('payments')
-    .where('driverId', isEqualTo: driverUid)
-    .where('rideId', isEqualTo: widget.rideId)
-    .snapshots()
-    .listen((snapshot) {
+    // Listen for payments with timestamp filter
+    FirebaseFirestore.instance
+        .collection('payments')
+        .where('driverId', isEqualTo: driverUid)
+        .where('rideId', isEqualTo: widget.rideId)
+        .snapshots()
+        .listen((snapshot) {
       for (var change in snapshot.docChanges) {
         // Only process documents that were added or modified
-        if (change.type == DocumentChangeType.added || 
+        if (change.type == DocumentChangeType.added ||
             change.type == DocumentChangeType.modified) {
           final data = change.doc.data() as Map<String, dynamic>;
-          
+
           // Check if this payment update happened after we opened this screen
-          final Timestamp paymentTimestamp = data['timestamp'] as Timestamp? ?? 
+          final Timestamp paymentTimestamp = data['timestamp'] as Timestamp? ??
               Timestamp.fromDate(DateTime(2000)); // Default old date if null
-          
+
           // Only process if the payment was created/updated after this screen was opened
           if (paymentTimestamp.toDate().isAfter(_sessionStartTime)) {
             final String paymentId = change.doc.id;
             final String status = data['status'] ?? '';
             final String amount = data['amount'] ?? '0.00';
             final String notificationKey = '$paymentId:$status';
-            
+
             if (!_notifiedPaymentIds.contains(notificationKey)) {
               if (status == 'Completed') {
                 NotificationService.showLocalNotification(
@@ -498,31 +503,28 @@ void _setupRideListener() {
         }
       }
     });
-}
+  }
 
   void _setupForegroundNotificationHandling() {
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
 
-    if (message.notification != null) {
-      NotificationService.showLocalNotification(
-        message.notification?.title, 
-        message.notification?.body
-      );
-    }
-  });
-}
+      if (message.notification != null) {
+        NotificationService.showLocalNotification(
+            message.notification?.title, message.notification?.body);
+      }
+    });
+  }
 
-  
-@override
-void initState() {
-  super.initState();
-  _sessionStartTime = DateTime.now(); // Remember when we opened this screen
-  NotificationService.init();
-  _setupForegroundNotificationHandling();
-  _setupRideListener();
-}
+  @override
+  void initState() {
+    super.initState();
+    _sessionStartTime = DateTime.now(); // Remember when we opened this screen
+    NotificationService.init();
+    _setupForegroundNotificationHandling();
+    _setupRideListener();
+  }
 
   @override
   void dispose() {
@@ -538,326 +540,334 @@ void initState() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('rides')
-            .doc(widget.rideId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Something went wrong'));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final data = snapshot.data?.data() as Map<String, dynamic>?;
-          if (data == null) {
-            return Center(child: Text('Ride not found'));
-          }
+      body: SafeArea(
+        child: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('rides')
+              .doc(widget.rideId)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(child: Text('Something went wrong'));
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            final data = snapshot.data?.data() as Map<String, dynamic>?;
+            if (data == null) {
+              return Center(child: Text('Ride not found'));
+            }
 
-          if (data['passengerLatitude'] != null &&
-              data['passengerLongitude'] != null) {
-            _pickupLocation = LatLng(
-              data['passengerLatitude'],
-              data['passengerLongitude'],
-            );
-            _markers.removeWhere((m) => m.markerId.value == 'pickup');
-            _markers.add(
-              Marker(
-                markerId: MarkerId('pickup'),
-                position: _pickupLocation!,
-                infoWindow: InfoWindow(title: "Pickup Location"),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueRed),
-              ),
-            );
-          }
-
-          if (data['destinationLatitude'] != null &&
-              data['destinationLongitude'] != null) {
-            _destinationLocation = LatLng(
-              data['destinationLatitude'],
-              data['destinationLongitude'],
-            );
-            _markers.removeWhere((m) => m.markerId.value == 'destination');
-            _markers.add(
-              Marker(
-                markerId: MarkerId('destination'),
-                position: _destinationLocation!,
-                infoWindow: InfoWindow(title: "Destination"),
-                icon: BitmapDescriptor.defaultMarkerWithHue(
-                    BitmapDescriptor.hueBlue),
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              Expanded(
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: _showRouteNotifier,
-                  builder: (context, showRoute, child) {
-                    return ValueListenableBuilder<Set<Polyline>>(
-                      valueListenable: _polylinesNotifier,
-                      builder: (context, polylines, child) {
-                        return GoogleMap(
-                          key: ValueKey(polylines.hashCode),
-                          initialCameraPosition: CameraPosition(
-                            target: _pickupLocation ??
-                                LatLng(30.1839768, 71.5113495),
-                            zoom: 14,
-                          ),
-                          markers: _markers,
-                          polylines: showRoute ? polylines : {},
-                          onMapCreated: (controller) {
-                            _mapController = controller;
-                          },
-                          myLocationEnabled: true,
-                          myLocationButtonEnabled: true,
-                        );
-                      },
-                    );
-                  },
+            if (data['passengerLatitude'] != null &&
+                data['passengerLongitude'] != null) {
+              _pickupLocation = LatLng(
+                data['passengerLatitude'],
+                data['passengerLongitude'],
+              );
+              _markers.removeWhere((m) => m.markerId.value == 'pickup');
+              _markers.add(
+                Marker(
+                  markerId: MarkerId('pickup'),
+                  position: _pickupLocation!,
+                  infoWindow: InfoWindow(title: "Pickup Location"),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueRed),
                 ),
-              ),
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey[200],
+              );
+            }
+
+            if (data['destinationLatitude'] != null &&
+                data['destinationLongitude'] != null) {
+              _destinationLocation = LatLng(
+                data['destinationLatitude'],
+                data['destinationLongitude'],
+              );
+              _markers.removeWhere((m) => m.markerId.value == 'destination');
+              _markers.add(
+                Marker(
+                  markerId: MarkerId('destination'),
+                  position: _destinationLocation!,
+                  infoWindow: InfoWindow(title: "Destination"),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueBlue),
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                Expanded(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: _showRouteNotifier,
+                    builder: (context, showRoute, child) {
+                      return ValueListenableBuilder<Set<Polyline>>(
+                        valueListenable: _polylinesNotifier,
+                        builder: (context, polylines, child) {
+                          return GoogleMap(
+                            key: ValueKey(polylines.hashCode),
+                            initialCameraPosition: CameraPosition(
+                              target: _pickupLocation ??
+                                  LatLng(30.1839768, 71.5113495),
+                              zoom: 14,
                             ),
-                            child: FutureBuilder<String?>(
-                              future: getPassengerImage(data['passengerUid']),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
-                                }
-                                final imageUrl = snapshot.data;
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(28),
-                                  child: imageUrl != null && imageUrl.isNotEmpty
-                                      ? Image.network(
-                                          imageUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Icon(Icons.person),
-                                        )
-                                      : Icon(Icons.person),
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  data['passengerName'] ?? 'Name not available',
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    color: Color(0xff000000),
-                                  ),
-                                ),
-                                Text(
-                                  data['passengerPhone'] ??
-                                      'Phone not available',
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 14,
-                                    color: Color(0xff4f4f4f),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'Fee:',
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 12,
-                                  color: Color(0xff545454),
-                                ),
-                              ),
-                              Text(
-                                computePrice(),
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  color: Color(0xff1D3557),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 32),
-                      Row(
-                        children: [
-                          _buildLocationIndicator(),
-                          SizedBox(width: 24),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildLocationText(
-                                  'Pickup Location',
-                                  data['passengerAddress'] ??
-                                      'Address not available',
-                                ),
-                                SizedBox(height: 14),
-                                _buildLocationText(
-                                  'Drop off Location',
-                                  data['destinationAddress'] ??
-                                      'Destination not available',
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 32),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: _rideAcceptedNotifier,
-                        builder: (context, rideAccepted, child) {
-                          if (rideAccepted) {
-                            return ValueListenableBuilder<String>(
-                              valueListenable: _buttonStateNotifier,
-                              builder: (context, buttonState, child) {
-                                return SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      if (buttonState == "goToA") {
-                                        await fetchAndDisplayRoute();
-                                        _buttonStateNotifier.value = "arrived";
-                                      } else if (buttonState == "arrived") {
-                                        final user =
-                                            FirebaseAuth.instance.currentUser;
-                                        // print('UER ISS ${user!.uid}');
-                                        if (user != null) {
-                                          await FirebaseFirestore.instance
-                                              .collection('rides')
-                                              .doc(widget.rideId)
-                                              .update({'arrived': true});
-                                        }
-                                        _buttonStateNotifier.value = "goToB";
-                                      } else if (buttonState == "goToB") {
-                                        await fetchAndDisplayRouteToDestination();
-                                        _buttonStateNotifier.value = "Finish";
-                                      } else if (buttonState == "Finish") {
-                                        await _storeRideHistory();
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => BottomBar(),
-                                          ),
-                                        );
-                                        // showPaymentSuccess(context);
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xff163051),
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 15),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      buttonState == "goToA"
-                                          ? "Go to A"
-                                          : buttonState == "arrived"
-                                              ? "Arrived"
-                                              : buttonState == "goToB"
-                                                  ? "Go to B"
-                                                  : "Finish",
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          } else {
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      rejectRide();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xffF3f7fd),
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 15),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Reject',
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                        color: Color(0xff163051),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: 16),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      acceptRide(widget.rideId);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xff163051),
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 15),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Accept',
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }
+                            markers: _markers,
+                            polylines: showRoute ? polylines : {},
+                            onMapCreated: (controller) {
+                              _mapController = controller;
+                            },
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                          );
                         },
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey[200],
+                              ),
+                              child: FutureBuilder<String?>(
+                                future: getPassengerImage(data['passengerUid']),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CircularProgressIndicator();
+                                  }
+                                  final imageUrl = snapshot.data;
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(28),
+                                    child: imageUrl != null &&
+                                            imageUrl.isNotEmpty
+                                        ? Image.network(
+                                            imageUrl,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Icon(Icons.person),
+                                          )
+                                        : Icon(Icons.person),
+                                  );
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['passengerName'] ??
+                                        'Name not available',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      color: Color(0xff000000),
+                                    ),
+                                  ),
+                                  Text(
+                                    data['passengerPhone'] ??
+                                        'Phone not available',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 14,
+                                      color: Color(0xff4f4f4f),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  'Fee:',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 12,
+                                    color: Color(0xff545454),
+                                  ),
+                                ),
+                                Text(
+                                  computePrice(),
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                    color: Color(0xff1D3557),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 32),
+                        Row(
+                          children: [
+                            _buildLocationIndicator(),
+                            SizedBox(width: 24),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildLocationText(
+                                    'Pickup Location',
+                                    data['passengerAddress'] ??
+                                        'Address not available',
+                                  ),
+                                  SizedBox(height: 14),
+                                  _buildLocationText(
+                                    'Drop off Location',
+                                    data['destinationAddress'] ??
+                                        'Destination not available',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 32),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _rideAcceptedNotifier,
+                          builder: (context, rideAccepted, child) {
+                            if (rideAccepted) {
+                              return ValueListenableBuilder<String>(
+                                valueListenable: _buttonStateNotifier,
+                                builder: (context, buttonState, child) {
+                                  return SizedBox(
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        if (buttonState == "goToA") {
+                                          await fetchAndDisplayRoute();
+                                          _buttonStateNotifier.value =
+                                              "arrived";
+                                        } else if (buttonState == "arrived") {
+                                          final user =
+                                              FirebaseAuth.instance.currentUser;
+                                          // print('UER ISS ${user!.uid}');
+                                          if (user != null) {
+                                            await FirebaseFirestore.instance
+                                                .collection('rides')
+                                                .doc(widget.rideId)
+                                                .update({'arrived': true});
+                                          }
+                                          _buttonStateNotifier.value = "goToB";
+                                        } else if (buttonState == "goToB") {
+                                          await fetchAndDisplayRouteToDestination();
+                                          _buttonStateNotifier.value = "Finish";
+                                        } else if (buttonState == "Finish") {
+                                          await _storeRideHistory();
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => BottomBar(),
+                                            ),
+                                          );
+                                          // showPaymentSuccess(context);
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xff163051),
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        buttonState == "goToA"
+                                            ? "Go to A"
+                                            : buttonState == "arrived"
+                                                ? "Arrived"
+                                                : buttonState == "goToB"
+                                                    ? "Go to B"
+                                                    : "Finish",
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            } else {
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        rejectRide();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xffF3f7fd),
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Reject',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          color: Color(0xff163051),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        acceptRide(widget.rideId);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xff163051),
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 15),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Accept',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

@@ -145,6 +145,14 @@ Drawer getDrawer(BuildContext context) {
           Navigator.push(context,
               MaterialPageRoute(builder: (context) => HelpAndSupport()));
         }),
+        _buildDrawerItem('assets/icons/dicon10.svg', 'Delete Your Account',
+            () async {
+          Navigator.pop(context);
+          bool confirmLogout = await _showDeleteConfirmation(context);
+          if (confirmLogout) {
+            await _deleteAccount(context);
+          }
+        }),
         _buildDrawerItem('assets/icons/dicon10.svg', 'Logout', () async {
           Navigator.pop(context);
           bool confirmLogout = await _showLogoutConfirmation(context);
@@ -192,7 +200,40 @@ Future<bool> _showLogoutConfirmation(BuildContext context) async {
       false;
 }
 
-// 3️⃣ Add this function below your _logout method
+Future<bool> _showDeleteConfirmation(BuildContext context) async {
+  return await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text("Delete your account"),
+          content: Text("Are you sure you want to delete your account?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                "Cancel",
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context, true);
+                Provider.of<PaymentProvider>(context, listen: false).reset();
+                final userRole =
+                    Provider.of<UserRoleProvider>(context, listen: false);
+                userRole.resetRole();
+                await removeDeviceTokenOnLogout(userRole.role);
+              },
+              child: Text(
+                "Yes",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+}
 
 Future<void> _deleteAccount(BuildContext context) async {
   try {
@@ -206,9 +247,6 @@ Future<void> _deleteAccount(BuildContext context) async {
     final roleProvider = Provider.of<UserRoleProvider>(context, listen: false);
     String collectionName =
         roleProvider.role == 'Driver' ? 'drivers' : 'passengers';
-
-    // Remove FCM token from Firestore
-    await removeDeviceTokenOnLogout(roleProvider.role);
 
     // Delete user data from Firestore
     await FirebaseFirestore.instance

@@ -48,7 +48,7 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      driverImage.text=pickedFile.path;
+      driverImage.text = pickedFile.path;
       Provider.of<SignupProvider>(context, listen: false)
           .setDriverImage(pickedFile.path);
     }
@@ -244,14 +244,8 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
                 } else {
                   var signupPro =
                       Provider.of<SignupProvider>(context, listen: false);
-                  signupPro.setDriverValue1(
-                      name.text,
-                      phone.text,
-                      email.text,
-                      street.text,
-                      city.text,
-                      district.text,
-                      driverImage.text);
+                  signupPro.setDriverValue1(name.text, phone.text, email.text,
+                      street.text, city.text, district.text, driverImage.text);
                 }
                 if (_currentStep < _labels.length - 1) {
                   _nextStep();
@@ -294,7 +288,8 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
             SizedBox(height: 20),
             GestureDetector(
               onTap: () {
-                if (vehicleName.text.isEmpty || vehicleType.text.isEmpty ||
+                if (vehicleName.text.isEmpty ||
+                    vehicleType.text.isEmpty ||
                     vehicleNumber.text.isEmpty ||
                     color.text.isEmpty) {
                   EasyLoading.showError("Please fill in all the fields");
@@ -302,8 +297,8 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
                 } else {
                   var signupPro =
                       Provider.of<SignupProvider>(context, listen: false);
-                  signupPro.setDriverValue2(
-                      vehicleName.text, vehicleType.text, vehicleNumber.text, color.text);
+                  signupPro.setDriverValue2(vehicleName.text, vehicleType.text,
+                      vehicleNumber.text, color.text);
                 }
                 if (_currentStep < _labels.length - 1) {
                   _nextStep();
@@ -416,40 +411,42 @@ class _CustomStepperWidgetState extends State<CustomStepperWidget> {
       backgroundColor: Colors.white,
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          height: 200,
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              ListTile(
-                title: Text('Car', style: GoogleFonts.poppins(fontSize: 16)),
-                onTap: () {
-                  setState(() {
-                    vehicleType.text = 'Car';
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text('Motorcycle',
-                    style: GoogleFonts.poppins(fontSize: 16)),
-                onTap: () {
-                  setState(() {
-                    vehicleType.text = 'Motorcycle';
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: Text('Van', style: GoogleFonts.poppins(fontSize: 16)),
-                onTap: () {
-                  setState(() {
-                    vehicleType.text = 'Van';
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-            ],
+        return SafeArea(
+          child: Container(
+            height: 200,
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text('Car', style: GoogleFonts.poppins(fontSize: 16)),
+                  onTap: () {
+                    setState(() {
+                      vehicleType.text = 'Car';
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: Text('Motorcycle',
+                      style: GoogleFonts.poppins(fontSize: 16)),
+                  onTap: () {
+                    setState(() {
+                      vehicleType.text = 'Motorcycle';
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: Text('Van', style: GoogleFonts.poppins(fontSize: 16)),
+                  onTap: () {
+                    setState(() {
+                      vehicleType.text = 'Van';
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

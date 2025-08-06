@@ -86,6 +86,7 @@ class _SearchLocationState extends State<SearchLocation> {
     // log('SELECTED LAT LNG ISS $selectedLatLng');
     // log('SELECTED LAT LNG OF PASSEGER ISS ${locPro.currentLatitude} ${locPro.currentLongitude}');
     // log('SELECTED LAT LNG OF DRIVER ISS ${locPro.selectedLatitude} ${locPro.selectedLongitude}');
+    
     Navigator.pop(context, details);
     bottomSheet(context, locPro);
   }

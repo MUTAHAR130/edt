@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 class PhoneAuthHelper {
   static Future<void> sendOtp({
@@ -9,6 +10,7 @@ class PhoneAuthHelper {
     required void Function(FirebaseAuthException) onError,
   }) async {
     try {
+      EasyLoading.show();
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -24,6 +26,7 @@ class PhoneAuthHelper {
         timeout: const Duration(seconds: 60),
         forceResendingToken: null,
       );
+      EasyLoading.dismiss();
     } catch (e) {
       print('Error sending OTP: $e');
       onError(FirebaseAuthException(
